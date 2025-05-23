@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://drrldetdmv4rv"]
+
+[ext_resource type="PackedScene" uid="uid://c8dujigyjdxtb" path="res://maze/scene.gltf" id="1_7q7q3"]
+
+[node name="Node3D" type="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.74063, -9.91469, -3.39072)
+
+[node name="Sketchfab_Scene" parent="." instance=ExtResource("1_7q7q3")]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
