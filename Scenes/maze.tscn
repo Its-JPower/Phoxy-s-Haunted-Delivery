@@ -1,4 +1,4 @@
-[gd_scene load_steps=265 format=4 uid="uid://dmsrvg4ypnwy3"]
+[gd_scene load_steps=265 format=4 uid="uid://dy1j4lnlxipn1"]
 
 [ext_resource type="Texture2D" uid="uid://bltaq1p4mtv02" path="res://maze/Maze2_BLACK BUG BITE.jpg" id="1_bbt2e"]
 [ext_resource type="Texture2D" uid="uid://dq5omulxbdvgn" path="res://maze/Maze2_bakedMaze_specularGlossiness_3.png" id="2_4lq1w"]
