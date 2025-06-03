@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://oj3blpxqf1bl"]
 
-[ext_resource type="PackedScene" uid="uid://bwggrf7sbmkcv" path="res://addons/PlayerCharacter/PlayerCharacterScene.tscn" id="1_oh4cu"]
+[ext_resource type="PackedScene" uid="uid://cc1m2a1obsyn4" path="res://addons/fpc/character.tscn" id="1_60tp4"]
 [ext_resource type="Material" uid="uid://cmlreoo2qwhp4" path="res://addons/Arts/StructureMaterial.tres" id="2_etmyc"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_fjbi6"]
@@ -30,7 +30,7 @@ shadow_enabled = true
 [node name="PlayerCharacter" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.7646, 1.50542, -19.959)
 
-[node name="PlayerCharacter" parent="PlayerCharacter" instance=ExtResource("1_oh4cu")]
+[node name="Character" parent="PlayerCharacter" instance=ExtResource("1_60tp4")]
 
 [node name="Map" type="Node3D" parent="."]
 
