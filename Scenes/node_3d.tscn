@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://drrldetdmv4rv"]
 
-[ext_resource type="PackedScene" uid="uid://dy1j4lnlxipn1" path="res://Scenes/maze.tscn" id="2_bi5fs"]
+[ext_resource type="PackedScene" uid="uid://di0yabw5w8rmk" path="res://Scenes/maze.tscn" id="2_bi5fs"]
 [ext_resource type="PackedScene" uid="uid://bwggrf7sbmkcv" path="res://addons/PlayerCharacter/PlayerCharacterScene.tscn" id="2_okq71"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bi5fs"]
