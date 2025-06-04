@@ -31,6 +31,8 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.7646, 1.50542, -19.959)
 
 [node name="Character" parent="PlayerCharacter" instance=ExtResource("1_60tp4")]
+sprint_mode = 1
+dynamic_gravity = true
 
 [node name="Map" type="Node3D" parent="."]
 
