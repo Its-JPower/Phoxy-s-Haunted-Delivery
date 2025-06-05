@@ -1,8 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://cc1m2a1obsyn4"]
+[gd_scene load_steps=21 format=3 uid="uid://cc1m2a1obsyn4"]
 
 [ext_resource type="Script" uid="uid://ca0fmy72vng4n" path="res://addons/fpc/character.gd" id="1_0t4e8"]
 [ext_resource type="Script" uid="uid://bo5a7jqdrbami" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
 [ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
+[ext_resource type="PackedScene" uid="uid://d2hfufwljnd4s" path="res://Scenes/PLAYER.tscn" id="4_bx7cj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uy03j"]
 
@@ -444,3 +445,6 @@ layout_mode = 2
 
 [node name="EditorModule" type="Node" parent="."]
 script = ExtResource("3_v3ckk")
+
+[node name="Foxy2" parent="." instance=ExtResource("4_bx7cj")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 1.20403, 0)
