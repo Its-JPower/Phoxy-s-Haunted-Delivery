@@ -1,7 +1,8 @@
-[gd_scene load_steps=19 format=3 uid="uid://bwggrf7sbmkcv"]
+[gd_scene load_steps=20 format=3 uid="uid://bwggrf7sbmkcv"]
 
 [ext_resource type="Script" uid="uid://d3s8yxuvpmekm" path="res://addons/PlayerCharacter/StateMachine/PlayerCharacterScript.gd" id="1_h128t"]
 [ext_resource type="Script" uid="uid://b0fbr48rbvn27" path="res://addons/PlayerCharacter/Camera/CameraScript.gd" id="2_x12n0"]
+[ext_resource type="Script" uid="uid://dena8sowepoo0" path="res://addons/shooter_kit/ShooterKit3D.gd" id="3_17hed"]
 [ext_resource type="Script" uid="uid://dx02l6p6behb8" path="res://addons/PlayerCharacter/UI/HUDScript.gd" id="16_5jm78"]
 [ext_resource type="FontFile" uid="uid://bwr73i28ligrq" path="res://addons/Arts/Ticketing.ttf" id="17_ryxgj"]
 [ext_resource type="Script" uid="uid://sca7ypsol83f" path="res://addons/PlayerCharacter/StateMachine/StateMachineScript.gd" id="54_e0r17"]
@@ -112,6 +113,30 @@ far = 1000.0
 [node name="RayCast3D" type="RayCast3D" parent="CameraHolder/Camera"]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 0, 0, 0)
 target_position = Vector3(-1.265, 0, 0)
+
+[node name="Pistol" type="Node3D" parent="CameraHolder/Camera" node_paths=PackedStringArray("CameraReference")]
+script = ExtResource("3_17hed")
+Enabled = false
+HandleHud = false
+CameraReference = NodePath("..")
+metadata/_custom_type_script = "uid://dena8sowepoo0"
+
+[node name="AK" type="Node3D" parent="CameraHolder/Camera" node_paths=PackedStringArray("CameraReference")]
+script = ExtResource("3_17hed")
+Automatic = true
+FireCadence = 0.1
+HandleHud = false
+CameraReference = NodePath("..")
+metadata/_custom_type_script = "uid://dena8sowepoo0"
+
+[node name="ROCKET" type="Node3D" parent="CameraHolder/Camera" node_paths=PackedStringArray("CameraReference")]
+script = ExtResource("3_17hed")
+Enabled = false
+FireCadence = 1.0
+MaxDistance = 100.0
+HandleHud = false
+CameraReference = NodePath("..")
+metadata/_custom_type_script = "uid://dena8sowepoo0"
 
 [node name="Hitbox" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_5yjma")
