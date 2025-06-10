@@ -49,6 +49,3 @@ bones/20/rotation = Quaternion(0.632352, -6.73828e-09, -0.0351945, 0.773882)
 
 [node name="Cube" parent="Armature/Skeleton3D" index="0"]
 surface_material_override/0 = SubResource("StandardMaterial3D_lvlad")
-
-[node name="AnimationPlayer" parent="." index="1"]
-autoplay = "Armature|Run"

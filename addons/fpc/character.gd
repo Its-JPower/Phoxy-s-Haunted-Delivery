@@ -44,7 +44,8 @@ extends CharacterBody3D
 ## A reference to the headbob animation for use in the character script.
 @export var HEADBOB_ANIMATION : AnimationPlayer
 ## A reference to the jump animation for use in the character script.
-@export var JUMP_ANIMATION : AnimationPlayer
+@export var JUMP_ANIMATION : AnimationPlayer = $Foxy2/AnimationPlayer
+
 ## A reference to the crouch animation for use in the character script.
 @export var CROUCH_ANIMATION : AnimationPlayer
 ## A reference to the the player's collision shape for use in the character script.
@@ -134,6 +135,7 @@ var gravity : float = ProjectSettings.get_setting("physics/3d/default_gravity") 
 
 # Stores mouse input for rotating the camera in the physics process
 var mouseInput : Vector2 = Vector2(0,0)
+@onready var foxy_2: Node3D = $Foxy2
 
 #endregion
 
@@ -181,7 +183,6 @@ func _physics_process(delta): # Most things happen here.
 	handle_movement(delta, input_dir)
 
 	handle_head_rotation()
-
 	# The player is not able to stand up if the ceiling is too low
 	low_ceiling = $CrouchCeilingDetection.is_colliding()
 
@@ -208,12 +209,12 @@ func handle_jumping():
 		if continuous_jumping: # Hold down the jump button
 			if Input.is_action_pressed(controls.JUMP) and is_on_floor() and !low_ceiling:
 				if jump_animation:
-					JUMP_ANIMATION.play("jump", 0.25)
+					JUMP_ANIMATION.play("Armature|Jump", 0.25)
 				velocity.y += jump_velocity # Adding instead of setting so jumping on slopes works properly
 		else:
 			if Input.is_action_just_pressed(controls.JUMP) and is_on_floor() and !low_ceiling:
 				if jump_animation:
-					JUMP_ANIMATION.play("jump", 0.25)
+					JUMP_ANIMATION.play("Armature|Jump", 0.25)
 				velocity.y += jump_velocity
 
 
@@ -261,6 +262,7 @@ func handle_head_rotation():
 			HEAD.rotation.y += controller_view_rotation.y * -1
 		else:
 			HEAD.rotation.y += controller_view_rotation.y
+	foxy_2.rotation.y = HEAD.rotation.y + 135
 
 	mouseInput = Vector2(0,0)
 	HEAD.rotation.x = clamp(HEAD.rotation.x, deg_to_rad(-90), deg_to_rad(90))
@@ -410,12 +412,12 @@ func play_jump_animation():
 		# Compares velocity direction against the camera direction (via dot product) to determine which landing animation to play.
 		var side_landed : int = round(velocity_2D.dot(facing_direction_2D))
 
-		if side_landed > 0:
-			JUMP_ANIMATION.play("land_right", 0.25)
-		elif side_landed < 0:
-			JUMP_ANIMATION.play("land_left", 0.25)
-		else:
-			JUMP_ANIMATION.play("land_center", 0.25)
+#		if side_landed > 0:
+#			JUMP_ANIMATION.play("land_right", 0.25)
+#		elif side_landed < 0:
+#			JUMP_ANIMATION.play("land_left", 0.25)
+#		else:
+#			JUMP_ANIMATION.play("land_center", 0.25)
 
 #endregion
 

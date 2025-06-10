@@ -384,6 +384,9 @@ JUMP_ANIMATION = NodePath("Head/JumpAnimation")
 CROUCH_ANIMATION = NodePath("CrouchAnimation")
 COLLISION_MESH = NodePath("Collision")
 
+[node name="Foxy2" parent="." instance=ExtResource("4_bx7cj")]
+transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 1.20403, 0)
+
 [node name="Mesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 
@@ -446,5 +449,4 @@ layout_mode = 2
 [node name="EditorModule" type="Node" parent="."]
 script = ExtResource("3_v3ckk")
 
-[node name="Foxy2" parent="." instance=ExtResource("4_bx7cj")]
-transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 1.20403, 0)
+[node name="ImporterMeshInstance3D" type="ImporterMeshInstance3D" parent="."]
