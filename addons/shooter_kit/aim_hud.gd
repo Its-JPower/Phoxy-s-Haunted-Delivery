@@ -6,6 +6,10 @@ class_name AimHud
 
 func _ready() -> void:
 	cross.position = cross.position + CrossOffset
+	cross = $AimHud/Cross
+	
 
 func SetCross(crossTexture : Texture2D):
+	print("setting cross", crossTexture, " on ", cross)
+	cross = $AimHud/Cross
 	cross.texture = crossTexture

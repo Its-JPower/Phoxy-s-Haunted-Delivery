@@ -49,7 +49,7 @@ func _ready() -> void:
 	defaultSpawnMarker.position.z = -1	
 	if CameraReference:
 		fovLevelNormal = CameraReference.fov
-	
+
 func _physics_process(delta: float) -> void:
 	if not Enabled:
 		return

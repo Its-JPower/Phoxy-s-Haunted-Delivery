@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b1xkrm27e0wnm"]
 
-[ext_resource type="Script" path="res://addons/shooter_kit/aim_hud.gd" id="1_e00gt"]
+[ext_resource type="Script" uid="uid://c53e5nkx5ck0l" path="res://addons/shooter_kit/aim_hud.gd" id="1_e00gt"]
 [ext_resource type="Texture2D" uid="uid://biskx0veqfrpd" path="res://addons/shooter_kit/textures/cross.svg" id="2_u1iqe"]
 
 [node name="AimHud" type="CanvasLayer"]
