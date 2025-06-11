@@ -389,11 +389,11 @@ transform = Transform3D(0.3, 0, 0, 0, 0.3, 0, 0, 0, 0.3, 0, 1.243, 0)
 
 [node name="Skeleton3D" parent="Foxy2/Armature" index="0"]
 bones/0/position = Vector3(0.780133, 0.990592, -0.0149919)
-bones/0/rotation = Quaternion(0.705249, 0.0721566, -0.701321, 0.0746038)
+bones/0/rotation = Quaternion(0.708431, 0.0266079, -0.704669, 0.0293031)
 bones/1/rotation = Quaternion(-0.0017353, 0.000156368, 0.122139, 0.992512)
 bones/2/rotation = Quaternion(-0.00163595, -1.11606e-08, 0.314633, 0.949212)
 bones/7/position = Vector3(-0.780133, 0.990592, -0.0149919)
-bones/7/rotation = Quaternion(0.705342, -0.0710212, 0.703263, 0.0535773)
+bones/7/rotation = Quaternion(0.707593, -0.0431711, 0.704828, 0.0258225)
 bones/8/rotation = Quaternion(0.0369634, -0.109217, -0.289437, 0.950227)
 bones/9/rotation = Quaternion(-0.029479, -0.0430206, -0.554841, 0.83032)
 bones/10/rotation = Quaternion(-0.079533, 0.131726, 0.987864, -0.0211718)

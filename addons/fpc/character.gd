@@ -135,7 +135,8 @@ var gravity : float = ProjectSettings.get_setting("physics/3d/default_gravity") 
 
 # Stores mouse input for rotating the camera in the physics process
 var mouseInput : Vector2 = Vector2(0,0)
-@onready var foxy_2: Node3D = $Foxy2
+@onready var anim_player : AnimationPlayer = $Foxy2/AnimationPlayer
+@onready var foxy_2 : Node3D = $Foxy2
 
 #endregion
 
@@ -209,19 +210,28 @@ func handle_jumping():
 		if continuous_jumping: # Hold down the jump button
 			if Input.is_action_pressed(controls.JUMP) and is_on_floor() and !low_ceiling:
 				if jump_animation:
-					JUMP_ANIMATION.play("Armature|Jump", 0.25)
+					anim_player.play("jump", 0.25, 2)
 				velocity.y += jump_velocity # Adding instead of setting so jumping on slopes works properly
 		else:
 			if Input.is_action_just_pressed(controls.JUMP) and is_on_floor() and !low_ceiling:
 				if jump_animation:
-					JUMP_ANIMATION.play("Armature|Jump", 0.25)
+					anim_player.play("jump", 0.25, 2)
 				velocity.y += jump_velocity
+
 
 
 func handle_movement(delta, input_dir):
 	var direction = input_dir.rotated(-HEAD.rotation.y)
 	direction = Vector3(direction.x, 0, direction.y)
 	move_and_slide()
+	if Input.is_action_just_released(controls.FORWARD) and state == "normal":
+		anim_player.play("idle", .75, 0.75)
+	elif Input.is_action_just_released(controls.BACKWARD) and state == "normal":
+		anim_player.play("idle", .75, 0.75)
+	elif Input.is_action_just_released(controls.LEFT) and state == "normal":
+		anim_player.play("idle", .75, 0.75)
+	elif Input.is_action_just_released(controls.RIGHT) and state == "normal":
+		anim_player.play("idle", .75, 0.75)
 
 	if in_air_momentum:
 		if is_on_floor():
@@ -348,22 +358,29 @@ func enter_normal_state():
 	var prev_state = state
 	if prev_state == "crouching":
 		CROUCH_ANIMATION.play_backwards("crouch")
+		anim_player.play_backwards("crouch")
+	if prev_state == "jumping":
+		anim_player.play("idle", .25)
 	state = "normal"
 	speed = base_speed
+	anim_player.play("idle", .25)
 
 func enter_crouch_state():
 	#print("entering crouch state")
 	state = "crouching"
 	speed = crouch_speed
 	CROUCH_ANIMATION.play("crouch")
+	anim_player.play("crouch", .25, 5.5)
 
 func enter_sprint_state():
 	#print("entering sprint state")
 	var prev_state = state
 	if prev_state == "crouching":
 		CROUCH_ANIMATION.play_backwards("crouch")
+		anim_player.play_backwards("crouch")
 	state = "sprinting"
 	speed = sprint_speed
+	anim_player.play("walk", .25, 2)
 
 #endregion
 
@@ -388,9 +405,10 @@ func play_headbob_animation(moving):
 		var was_playing : bool = false
 		if HEADBOB_ANIMATION.current_animation == use_headbob_animation:
 			was_playing = true
-
 		HEADBOB_ANIMATION.play(use_headbob_animation, 0.25)
 		HEADBOB_ANIMATION.speed_scale = (current_speed / base_speed) * 1.75
+		if anim_player.current_animation != "walk" and state == "normal":
+			anim_player.play("walk", 1)
 		if !was_playing:
 			HEADBOB_ANIMATION.seek(float(randi() % 2)) # Randomize the initial headbob direction
 			# Let me explain that piece of code because it looks like it does the opposite of what it actually does.
@@ -488,3 +506,12 @@ func handle_pausing():
 				#get_tree().paused = false
 
 #endregion
+
+
+func _on_animation_player_animation_finished(anim_name: StringName) -> void:
+	if anim_name == "jump" and state == "normal":
+		anim_player.play("walk", 0.25)
+	elif anim_name == "jump" and state == "sprinting":
+		anim_player.play("walk", 0.25, 2)
+	elif anim_name == "jump" and state == "idle":
+		anim_player.play("idle", 0.25)
