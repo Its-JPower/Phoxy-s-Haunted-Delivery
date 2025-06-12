@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://ciiihfi0bdnf8"
-path="res://.godot/imported/Foxy2.glb-cab30158b6ca4ee6b6524008b0a1c056.scn"
+path="res://.godot/imported/Foxy_fps.glb-0121a101579055255116150db56512e3.scn"
 
 [deps]
 
-source_file="res://Assets/Foxy/Foxy2.glb"
-dest_files=["res://.godot/imported/Foxy2.glb-cab30158b6ca4ee6b6524008b0a1c056.scn"]
+source_file="res://Assets/Foxy/Foxy_fps.glb"
+dest_files=["res://.godot/imported/Foxy_fps.glb-0121a101579055255116150db56512e3.scn"]
 
 [params]
 
