@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cntgaq4k0d8mp"
-path="res://.godot/imported/rocket bullet.glb-1fb4032f0d7e3bc3af4e16595de8332d.scn"
+uid="uid://cvwqwc6dyvuau"
+path="res://.godot/imported/red rocket bullet .glb-8d5e8ef78f578f534d9b0864704acb1f.scn"
 
 [deps]
 
-source_file="res://Texture/rocket bullet.glb"
-dest_files=["res://.godot/imported/rocket bullet.glb-1fb4032f0d7e3bc3af4e16595de8332d.scn"]
+source_file="res://Texture/red rocket bullet .glb"
+dest_files=["res://.godot/imported/red rocket bullet .glb-8d5e8ef78f578f534d9b0864704acb1f.scn"]
 
 [params]
 
@@ -21,8 +21,8 @@ nodes/import_as_skeleton_bones=false
 nodes/use_node_type_suffixes=true
 meshes/ensure_tangents=true
 meshes/generate_lods=true
-meshes/create_shadow_meshes=false
-meshes/light_baking=0
+meshes/create_shadow_meshes=true
+meshes/light_baking=1
 meshes/lightmap_texel_size=0.2
 meshes/force_disable_compression=false
 skins/use_named_skins=true

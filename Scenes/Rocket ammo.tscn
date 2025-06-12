@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://dodbxij2nljbn"]
+
+[ext_resource type="PackedScene" uid="uid://cntgaq4k0d8mp" path="res://Texture/rocket bullet.glb" id="1_g3dwt"]
+
+[node name="rocket bullet" instance=ExtResource("1_g3dwt")]
