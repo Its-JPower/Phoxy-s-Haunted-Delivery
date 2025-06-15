@@ -9,16 +9,16 @@ albedo_texture = ExtResource("2_5akii")
 [node name="Foxy" instance=ExtResource("1_tslye")]
 
 [node name="Skeleton3D" parent="Armature" index="0"]
-bones/3/rotation = Quaternion(0.166211, -0.0107168, -0.0580157, 0.984324)
+bones/3/rotation = Quaternion(0.160885, -0.0104994, -0.0511078, 0.985593)
 bones/4/rotation = Quaternion(0.749891, 0.00485608, -0.00969223, 0.661472)
-bones/5/rotation = Quaternion(0.624508, -0.00434539, 0.00867533, 0.780958)
-bones/6/rotation = Quaternion(0.581403, 0.105432, -0.764438, 0.257855)
+bones/5/rotation = Quaternion(0.632609, -0.00565073, 0.00955164, 0.774392)
+bones/6/rotation = Quaternion(0.594248, 0.101081, -0.754481, 0.259637)
 bones/7/rotation = Quaternion(0.412114, -0.320085, 0.404733, 0.750932)
-bones/9/rotation = Quaternion(-0.671564, 0.249309, 0.695782, 0.0522805)
+bones/9/rotation = Quaternion(-0.670965, 0.241828, 0.698418, 0.0594844)
 bones/10/rotation = Quaternion(0.0574331, 0.211475, 0.515368, 0.828478)
-bones/12/rotation = Quaternion(-0.0214343, 0.338224, 0.940551, -0.0225583)
+bones/12/rotation = Quaternion(-0.0217144, 0.326449, 0.944703, -0.0222888)
 bones/13/rotation = Quaternion(-0.521926, 0.00729887, -0.0409775, 0.851975)
-bones/15/rotation = Quaternion(0.0264236, 0.0905134, 0.995409, 0.0164348)
+bones/15/rotation = Quaternion(0.0256019, 0.0929438, 0.995143, 0.0198913)
 bones/16/rotation = Quaternion(-0.0785913, -0.00109505, 0.0183217, 0.996738)
 
 [node name="Cube" parent="Armature/Skeleton3D" index="0"]

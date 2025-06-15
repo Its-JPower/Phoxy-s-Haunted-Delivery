@@ -510,8 +510,8 @@ func handle_pausing():
 
 func _on_animation_player_animation_finished(anim_name: StringName) -> void:
 	if anim_name == "jump" and state == "normal":
-		anim_player.play("walk", 0.25)
+		anim_player.play("idle", 0.25)
 	elif anim_name == "jump" and state == "sprinting":
 		anim_player.play("walk", 0.25, 2)
-	elif anim_name == "jump" and state == "idle":
-		anim_player.play("idle", 0.25)
+	elif anim_name == "jump" and state == "walk":
+		anim_player.play("walk", 0.25)

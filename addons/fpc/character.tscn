@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ca0fmy72vng4n" path="res://addons/fpc/character.gd" id="1_0t4e8"]
 [ext_resource type="Script" uid="uid://bo5a7jqdrbami" path="res://addons/fpc/EditorModule.gd" id="3_v3ckk"]
 [ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://addons/fpc/debug.gd" id="3_x1wcc"]
-[ext_resource type="PackedScene" path="res://Assets/Foxy/Foxy2.glb" id="4_bx7cj"]
+[ext_resource type="PackedScene" uid="uid://ciiihfi0bdnf8" path="res://Assets/Foxy/Foxy_fps.glb" id="4_bx7cj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uy03j"]
 
