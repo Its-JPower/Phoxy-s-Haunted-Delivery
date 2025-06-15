@@ -127,20 +127,20 @@ metadata/_custom_type_script = "uid://dena8sowepoo0"
 
 [node name="AK" type="Node3D" parent="CameraHolder/Camera" node_paths=PackedStringArray("CameraReference")]
 script = ExtResource("3_17hed")
-Enabled = false
 Automatic = true
 FireCadence = 0.1
-HandleHud = false
 CrossTexture = ExtResource("5_2rfya")
 CameraReference = NodePath("..")
 metadata/_custom_type_script = "uid://dena8sowepoo0"
 
 [node name="ROCKET" type="Node3D" parent="CameraHolder/Camera" node_paths=PackedStringArray("ProjectileSpawnMarker", "CameraReference")]
 script = ExtResource("3_17hed")
+Enabled = false
 FireCadence = 1.0
 MaxDistance = 100.0
 ProjectileSpawnMarker = NodePath("../Marker3D")
 ProjectilePath = "res://Scenes/Rocket ammo.tscn"
+HandleHud = false
 CrossTexture = ExtResource("6_tp4dy")
 CameraReference = NodePath("..")
 metadata/_custom_type_script = "uid://dena8sowepoo0"
