@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://d3asbswv43kqu"]
+[gd_scene load_steps=6 format=3 uid="uid://d3asbswv43kqu"]
 
 [ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scenes/main_menu.gd" id="1_48xlc"]
 [ext_resource type="PackedScene" uid="uid://c4s0ngiwkjcq3" path="res://Assets/Foxy/Foxy.glb" id="2_48xlc"]
 [ext_resource type="Texture2D" uid="uid://e5fo5yrousb8" path="res://Assets/Foxy/base.png" id="3_1ehe0"]
+[ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_ce3w2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ce3w2"]
 albedo_texture = ExtResource("3_1ehe0")
@@ -25,6 +26,11 @@ size = Vector2i(1152, 648)
 render_target_update_mode = 4
 
 [node name="Camera3D" type="Camera3D" parent="Background/SubViewportContainer/SubViewport"]
+transform = Transform3D(-0.128449, 0, 1.00322, 0, 1, 0, -0.998797, 0, 0.0156458, 0, 0, 0)
+
+[node name="Timer" type="Timer" parent="Background/SubViewportContainer/SubViewport/Camera3D"]
+wait_time = 5.0
+autostart = true
 
 [node name="Foxy" parent="Background" instance=ExtResource("2_48xlc")]
 transform = Transform3D(0.35, 0, 0, 0, 0.347145, -0.044612, 0, 0.044612, 0.347145, 0, 0, -2.53002)
@@ -88,6 +94,9 @@ text = "Settings"
 layout_mode = 2
 size_flags_horizontal = 0
 text = "Quit"
+
+[node name="fnafpizzeria" parent="." instance=ExtResource("4_ce3w2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.67859, -1.48761, 3.80884)
 
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_play_pressed"]
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_options" to="." method="_on_options_pressed"]
