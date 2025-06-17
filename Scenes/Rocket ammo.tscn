@@ -1,5 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://dodbxij2nljbn"]
+[gd_scene load_steps=4 format=3 uid="uid://dodbxij2nljbn"]
 
-[ext_resource type="PackedScene" uid="uid://cntgaq4k0d8mp" path="res://Texture/rocket bullet.glb" id="1_g3dwt"]
+[ext_resource type="Script" uid="uid://b7g2tpvm0tvgy" path="res://Scenes/rocket_ammo.gd" id="1_g3dwt"]
+[ext_resource type="ArrayMesh" uid="uid://tpb8ngo38p24" path="res://meshes/rocket.res" id="2_xnwdp"]
 
-[node name="rocket bullet" instance=ExtResource("1_g3dwt")]
+[sub_resource type="SphereShape3D" id="SphereShape3D_1wni5"]
+
+[node name="Rocket" type="RigidBody3D"]
+custom_integrator = true
+continuous_cd = true
+contact_monitor = true
+max_contacts_reported = 3
+script = ExtResource("1_g3dwt")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.105, 0, 0, 0, 0.105, 0, 0, 0, 0.105, 0, 0, 0)
+mesh = ExtResource("2_xnwdp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_1wni5")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
