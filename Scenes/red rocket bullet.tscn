@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://ctgslwrnfs0vk"]
+
+[ext_resource type="PackedScene" uid="uid://cvwqwc6dyvuau" path="res://Texture/red rocket bullet .glb" id="1_rsoof"]
+
+[node name="red rocket bullet " instance=ExtResource("1_rsoof")]
