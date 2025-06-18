@@ -97,7 +97,7 @@ layout_mode = 2
 size_flags_horizontal = 0
 text = "Quit"
 
-[node name="fnafpizzeria" parent="." instance=ExtResource("4_ce3w2")]
+[node name="fnafpizzeriamodel" parent="." instance=ExtResource("4_ce3w2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.67859, -1.48761, 3.80884)
 
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_play_pressed"]
