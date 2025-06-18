@@ -108,10 +108,10 @@ func __ProjectileFire():
 	get_tree().root.add_child(projectile)
 	if projectile is RigidBody3D:
 		if ProjectileSpawnMarker:
-			projectile.transform = ProjectileSpawnMarker.global_transform	
+			projectile.transform = ProjectileSpawnMarker.global_transform
 			(projectile as RigidBody3D).linear_velocity = ProjectileSpawnMarker.global_transform.basis.z * -1 * ProjectileSpeed
 		else:
-			projectile.transform = defaultSpawnMarker.global_transform	
+			projectile.transform = defaultSpawnMarker.global_transform
 			(projectile as RigidBody3D).linear_velocity = defaultSpawnMarker.global_transform.basis.z * -1 * ProjectileSpeed
 
 func __traceFire():	

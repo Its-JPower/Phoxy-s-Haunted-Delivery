@@ -6,6 +6,7 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_1wni5"]
 
 [node name="Rocket" type="RigidBody3D"]
+transform = Transform3D(1, 0, 1.74846e-07, 0, 0.9, 0, -1.74846e-07, 0, 1, 0, 0, 0)
 custom_integrator = true
 continuous_cd = true
 contact_monitor = true
@@ -13,7 +14,7 @@ max_contacts_reported = 3
 script = ExtResource("1_g3dwt")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.105, 0, 0, 0, 0.105, 0, 0, 0, 0.105, 0, 0, 0)
+transform = Transform3D(-0.105, 0, 9.17939e-09, 0, 0.105, 0, -9.17939e-09, 0, -0.105, 0, 0, 0)
 mesh = ExtResource("2_xnwdp")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
