@@ -44,7 +44,6 @@ extends CharacterBody3D
 ## A reference to the headbob animation for use in the character script.
 @export var HEADBOB_ANIMATION : AnimationPlayer
 ## A reference to the jump animation for use in the character script.
-@export var JUMP_ANIMATION : AnimationPlayer = $Foxy2/AnimationPlayer
 
 ## A reference to the crouch animation for use in the character script.
 @export var CROUCH_ANIMATION : AnimationPlayer
@@ -390,7 +389,6 @@ func initialize_animations():
 	# Reset the camera position
 	# If you want to change the default head height, change these animations.
 	HEADBOB_ANIMATION.play("RESET")
-	JUMP_ANIMATION.play("RESET")
 	CROUCH_ANIMATION.play("RESET")
 
 func play_headbob_animation(moving):

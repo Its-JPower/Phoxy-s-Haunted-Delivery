@@ -1,0 +1,70 @@
+[gd_resource type="Theme" load_steps=14 format=3 uid="uid://dbtrx42b3xo3"]
+
+[ext_resource type="FontFile" uid="uid://detj2esiq67tk" path="res://Assets/Other/FaceYourFears.ttf" id="1_sifbo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_sifbo"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_12en7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ahonb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tebll"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wo0ov"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_m38ie"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_me62o"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5ggbj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_uxcyb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iynll"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wp3su"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fafls"]
+
+[resource]
+Button/colors/font_color = Color(0.875, 0.875, 0.875, 1)
+Button/colors/font_disabled_color = Color(0.875, 0.875, 0.875, 0.5)
+Button/colors/font_focus_color = Color(0.670688, 0.67069, 0.67069, 1)
+Button/colors/font_hover_color = Color(0.868984, 0.868985, 0.868985, 1)
+Button/colors/font_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/font_outline_color = Color(0.81, 0, 0, 1)
+Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+Button/colors/icon_disabled_color = Color(1, 1, 1, 0.4)
+Button/colors/icon_focus_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_color = Color(1, 1, 1, 1)
+Button/colors/icon_hover_pressed_color = Color(1, 1, 1, 1)
+Button/colors/icon_normal_color = Color(1, 1, 1, 1)
+Button/colors/icon_pressed_color = Color(1, 1, 1, 1)
+Button/constants/align_to_largest_stylebox = 0
+Button/constants/h_separation = 4
+Button/constants/icon_max_width = 0
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 32
+Button/fonts/font = ExtResource("1_sifbo")
+Button/styles/disabled = SubResource("StyleBoxEmpty_sifbo")
+Button/styles/disabled_mirrored = SubResource("StyleBoxEmpty_12en7")
+Button/styles/focus = SubResource("StyleBoxEmpty_ahonb")
+Button/styles/hover = SubResource("StyleBoxEmpty_tebll")
+Button/styles/hover_mirrored = SubResource("StyleBoxEmpty_wo0ov")
+Button/styles/hover_pressed = SubResource("StyleBoxEmpty_m38ie")
+Button/styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_me62o")
+Button/styles/normal = SubResource("StyleBoxEmpty_5ggbj")
+Button/styles/normal_mirrored = SubResource("StyleBoxEmpty_uxcyb")
+Button/styles/pressed = SubResource("StyleBoxEmpty_iynll")
+Button/styles/pressed_mirrored = SubResource("StyleBoxEmpty_wp3su")
+Label/colors/font_color = Color(1, 0, 0, 1)
+Label/colors/font_outline_color = Color(0, 0, 0, 1)
+Label/colors/font_shadow_color = Color(1, 1, 1, 0)
+Label/constants/line_spacing = 3
+Label/constants/outline_size = 1
+Label/constants/shadow_offset_x = 1
+Label/constants/shadow_offset_y = 1
+Label/constants/shadow_outline_size = 1
+Label/font_sizes/font_size = 64
+Label/fonts/font = ExtResource("1_sifbo")
+Label/styles/normal = SubResource("StyleBoxEmpty_fafls")

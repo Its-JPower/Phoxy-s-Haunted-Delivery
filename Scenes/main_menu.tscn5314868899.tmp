@@ -1,11 +1,10 @@
-[gd_scene load_steps=20 format=3 uid="uid://d3asbswv43kqu"]
+[gd_scene load_steps=19 format=3 uid="uid://d3asbswv43kqu"]
 
 [ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scenes/main_menu.gd" id="1_48xlc"]
 [ext_resource type="PackedScene" uid="uid://c5qk5flxkt7fu" path="res://Scenes/foxy.tscn" id="2_1ehe0"]
 [ext_resource type="Texture2D" uid="uid://cworn5l5sp6ek" path="res://Assets/Other/white_circle.png" id="3_ce3w2"]
 [ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_ce3w2"]
 [ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
-[ext_resource type="AudioStream" uid="uid://8r2ixye2qqwv" path="res://Assets/Audio/main_menu_music.mp3" id="6_opfnp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -204,7 +203,6 @@ theme_override_constants/margin_top = 45
 
 [node name="btn_play" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
 size_flags_vertical = 3
 theme = ExtResource("5_n45e2")
 text = "Play Game"
@@ -215,7 +213,6 @@ theme_override_constants/margin_top = 45
 
 [node name="btn_options" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
 size_flags_vertical = 3
 theme = ExtResource("5_n45e2")
 text = "Settings"
@@ -226,15 +223,10 @@ theme_override_constants/margin_top = 45
 
 [node name="btn_quit" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
 layout_mode = 2
-size_flags_horizontal = 4
 size_flags_vertical = 3
 text = "Quit"
 
 [node name="audio_player" type="AudioStreamPlayer" parent="Menu/MarginContainer/VBoxContainer"]
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("6_opfnp")
-autoplay = true
 
 [connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_entered"]
 [connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_exited"]
