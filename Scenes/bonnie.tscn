@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://bwsoc1s0de35c"]
+
+[ext_resource type="PackedScene" uid="uid://bab75nsw0q0i" path="res://Assets/Enemies/Bonnie.glb" id="1_ibp75"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Bonnie2" parent="." instance=ExtResource("1_ibp75")]
