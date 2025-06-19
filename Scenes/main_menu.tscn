@@ -16,7 +16,7 @@ sky_material = SubResource("ProceduralSkyMaterial_ce3w2")
 
 [sub_resource type="Environment" id="Environment_opfnp"]
 background_mode = 1
-background_color = Color(0.00351917, 0.00351917, 0.00351917, 1)
+background_color = Color(0.0605303, 0.0605303, 0.0605303, 1)
 sky = SubResource("Sky_n45e2")
 tonemap_mode = 2
 glow_enabled = true
@@ -231,6 +231,7 @@ size_flags_vertical = 3
 text = "Quit"
 
 [node name="audio_player" type="AudioStreamPlayer" parent="Menu/MarginContainer/VBoxContainer"]
+volume_db = 5.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6_opfnp")
