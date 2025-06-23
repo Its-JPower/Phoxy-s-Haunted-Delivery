@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://piuk64bsmsbc"]
+
+[ext_resource type="PackedScene" uid="uid://bugs1nyltu33p" path="res://Assets/Enemies/Chica.glb" id="1_4r5tu"]
+[ext_resource type="PackedScene" uid="uid://b2bfe15km7s8q" path="res://Assets/Enemies/Cupcake.glb" id="2_8xc16"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Chica2" parent="." instance=ExtResource("1_4r5tu")]
+
+[node name="Cupcake2" parent="." instance=ExtResource("2_8xc16")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)

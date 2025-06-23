@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dsv7sw3idon4b"]
+
+[ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Freddy" parent="." instance=ExtResource("1_w06hg")]

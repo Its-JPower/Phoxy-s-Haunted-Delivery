@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b6c4whs1cmso4"]
 
-[ext_resource type="PackedScene" uid="uid://bylpbx4xxhyvo" path="res://Rocket/ROcket.glb" id="1_k7aol"]
+[ext_resource type="PackedScene" uid="uid://bylpbx4xxhyvo" path="res://Assets/Rocket/ROcket.glb" id="1_k7aol"]
 
 [node name="Node3D" type="Node3D"]
 

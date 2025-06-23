@@ -1,8 +1,8 @@
 [gd_scene load_steps=265 format=4 uid="uid://di0yabw5w8rmk"]
 
-[ext_resource type="Texture2D" uid="uid://bltaq1p4mtv02" path="res://maze/Maze2_BLACK BUG BITE.jpg" id="1_bbt2e"]
-[ext_resource type="Texture2D" uid="uid://dq5omulxbdvgn" path="res://maze/Maze2_bakedMaze_specularGlossiness_3.png" id="2_4lq1w"]
-[ext_resource type="Texture2D" uid="uid://t4nx7t1se0jh" path="res://maze/Maze2_bakedMaze_normal.png" id="3_bjn2b"]
+[ext_resource type="Texture2D" uid="uid://bltaq1p4mtv02" path="res://Assets/maze/Maze2_BLACK BUG BITE.jpg" id="1_bbt2e"]
+[ext_resource type="Texture2D" uid="uid://dq5omulxbdvgn" path="res://Assets/maze/Maze2_bakedMaze_specularGlossiness_3.png" id="2_4lq1w"]
+[ext_resource type="Texture2D" uid="uid://t4nx7t1se0jh" path="res://Assets/maze/Maze2_bakedMaze_normal.png" id="3_bjn2b"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x1ov3"]
 resource_name = "Material.001"
