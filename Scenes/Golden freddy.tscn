@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://ddctjv1sdq1v6"]
+
+[ext_resource type="PackedScene" uid="uid://c51m3pg6m6t3f" path="res://Assets/Enemies/Golden freddy.glb" id="1_uj6h2"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Golden freddy" parent="." instance=ExtResource("1_uj6h2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.232956, 1.19209e-07, -0.14546)
