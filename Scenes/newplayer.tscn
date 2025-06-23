@@ -1,0 +1,28 @@
+[gd_scene load_steps=4 format=3 uid="uid://u3k6kqv5qe3t"]
+
+[ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scenes/newplayer.gd" id="1_e21d1"]
+[ext_resource type="PackedScene" uid="uid://c47tf2aach3xt" path="res://Assets/Foxy.glb" id="1_fp4xo"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_e21d1"]
+
+[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER")]
+script = ExtResource("1_e21d1")
+TILT_UPPER_LIMIT = 1.571
+CAMERA_CONTROLLER = NodePath("Camera3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_e21d1")
+
+[node name="Foxy2" parent="CollisionShape3D" instance=ExtResource("1_fp4xo")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.00072, 0)
+
+[node name="Foxy Armature" parent="CollisionShape3D/Foxy2" index="0"]
+transform = Transform3D(-0.1, 0, -8.74228e-09, 0, 0.1, 0, 8.74228e-09, 0, -0.1, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.816911, 0)
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="Camera3D"]
+update_mode = 1
+
+[editable path="CollisionShape3D/Foxy2"]
