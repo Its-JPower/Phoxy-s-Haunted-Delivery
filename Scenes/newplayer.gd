@@ -16,11 +16,17 @@ var _tilt_input : float
 var _player_rotation : Vector3 
 var _camera_rotation : Vector3
 
+var _is_crouching : bool = false
+
 func _unhandled_input(event: InputEvent) -> void:
 	_mouse_input = event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED
 	if _mouse_input:
 		_rotation_input = -event.relative.x * MOUSE_SENSITIVITY
 		_tilt_input = -event.relative.y * MOUSE_SENSITIVITY
+
+func _input(event):
+	if event.is_action_pressed("crouch"):
+		toggle_crouch()
 
 func _update_camera(delta):
 	_mouse_rotation.x += _tilt_input * delta
@@ -52,7 +58,7 @@ func _physics_process(delta: float) -> void:
 
 	# Get the input direction and handle the movement/deceleration.
 	# As good practice, you should replace UI actions with custom gameplay actions.
-	var input_dir := Input.get_vector("left", "right", "forward", "backward")
+	var input_dir := Input.get_vector("moveLeft", "moveRight", "moveForward", "moveBackward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
 		velocity.x = direction.x * SPEED
@@ -62,3 +68,10 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, SPEED)
 
 	move_and_slide()
+
+func toggle_crouch():
+	if _is_crouching == true:
+		print("UNCROUCH")
+	elif _is_crouching == false:
+		print("CROUCH")
+	_is_crouching = !_is_crouching
