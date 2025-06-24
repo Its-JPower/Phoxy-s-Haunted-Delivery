@@ -2,12 +2,15 @@ extends CharacterBody3D
 
 
 @export var SPEED : float = 5.0
+@export var TOGGLE_CROUCH : bool = true
 @export var JUMP_VELOCITY : float = 4.5
-
+@export_range(5,10,0.1) var CROUCH_SPEED : float = 7.0
 @export var MOUSE_SENSITIVITY : float = 0.5
 @export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
 @export var TILT_UPPER_LIMIT := deg_to_rad(-90.0)
 @export var CAMERA_CONTROLLER : Camera3D
+@export var ANIMATION_PLAYER : AnimationPlayer
+@export var CROUCH_SHAPECAST : ShapeCast3D
 
 var _mouse_input : bool = false
 var _mouse_rotation : Vector3
@@ -25,8 +28,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		_tilt_input = -event.relative.y * MOUSE_SENSITIVITY
 
 func _input(event):
-	if event.is_action_pressed("crouch"):
+	if event.is_action_pressed("crouch") and TOGGLE_CROUCH == true:
 		toggle_crouch()
+	if event.is_action_pressed("crouch") and _is_crouching == false and TOGGLE_CROUCH == false:
+		crouching(true)
+	if event.is_action_released("crouch") and TOGGLE_CROUCH == false:
+		crouching(false)
 
 func _update_camera(delta):
 	_mouse_rotation.x += _tilt_input * delta
@@ -46,6 +53,7 @@ func _update_camera(delta):
 
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	CROUCH_SHAPECAST.add_exception($".")
 
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
@@ -53,7 +61,7 @@ func _physics_process(delta: float) -> void:
 		velocity += get_gravity() * delta
 	_update_camera(delta)
 	# Handle jump.
-	if Input.is_action_just_pressed("jump") and is_on_floor():
+	if Input.is_action_just_pressed("jump") and is_on_floor() and _is_crouching == false:
 		velocity.y = JUMP_VELOCITY
 
 	# Get the input direction and handle the movement/deceleration.
@@ -70,8 +78,18 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 func toggle_crouch():
-	if _is_crouching == true:
-		print("UNCROUCH")
+	if _is_crouching == true and CROUCH_SHAPECAST.is_colliding() == false:
+		crouching(false)
 	elif _is_crouching == false:
-		print("CROUCH")
-	_is_crouching = !_is_crouching
+		crouching(true)
+
+func crouching(state : bool):
+	match state:
+		true:
+			ANIMATION_PLAYER.play("crouch", -1, CROUCH_SPEED)
+		false:
+			ANIMATION_PLAYER.play("crouch", -1, -CROUCH_SPEED, true)
+
+func _on_animation_player_animation_started(anim_name: StringName) -> void:
+	if anim_name == "crouch":
+		_is_crouching = !_is_crouching
