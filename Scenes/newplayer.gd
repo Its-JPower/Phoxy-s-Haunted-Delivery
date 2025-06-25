@@ -10,6 +10,7 @@ extends CharacterBody3D
 @export var TILT_UPPER_LIMIT := deg_to_rad(-90.0)
 @export var CAMERA_CONTROLLER : Camera3D
 @export var ANIMATION_PLAYER : AnimationPlayer
+@export var FOXY_ANIMATION_PLAYER : AnimationPlayer
 @export var CROUCH_SHAPECAST : ShapeCast3D
 
 var _mouse_input : bool = false
@@ -87,8 +88,10 @@ func crouching(state : bool):
 	match state:
 		true:
 			ANIMATION_PLAYER.play("crouch", -1, CROUCH_SPEED)
+			FOXY_ANIMATION_PLAYER.play("crouch", -1, CROUCH_SPEED)
 		false:
 			ANIMATION_PLAYER.play("crouch", -1, -CROUCH_SPEED, true)
+			FOXY_ANIMATION_PLAYER.play("crouch", -1, -CROUCH_SPEED, true)
 
 func _on_animation_player_animation_started(anim_name: StringName) -> void:
 	if anim_name == "crouch":
