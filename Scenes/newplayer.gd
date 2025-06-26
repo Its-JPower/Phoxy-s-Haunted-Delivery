@@ -1,7 +1,8 @@
 extends CharacterBody3D
 
 
-@export var SPEED : float = 5.0
+@export var SPEED_DEFAULT : float = 5.0
+@export var SPEED_CROUCH : float = 2.0
 @export var TOGGLE_CROUCH : bool = true
 @export var JUMP_VELOCITY : float = 4.5
 @export_range(5,10,0.1) var CROUCH_SPEED : float = 7.0
@@ -13,6 +14,8 @@ extends CharacterBody3D
 @export var FOXY_ANIMATION_PLAYER : AnimationPlayer
 @export var CROUCH_SHAPECAST : ShapeCast3D
 
+
+var _speed : float
 var _mouse_input : bool = false
 var _mouse_rotation : Vector3
 var _rotation_input : float
@@ -34,7 +37,8 @@ func _input(event):
 	if event.is_action_pressed("crouch") and _is_crouching == false and TOGGLE_CROUCH == false:
 		crouching(true)
 	if event.is_action_released("crouch") and TOGGLE_CROUCH == false:
-		crouching(false)
+		if CROUCH_SHAPECAST.is_colliding() == false:
+			crouching(false)
 
 func _update_camera(delta):
 	_mouse_rotation.x += _tilt_input * delta
@@ -53,8 +57,13 @@ func _update_camera(delta):
 	_tilt_input = 0.0
 
 func _ready():
+	
+	Global.player = self
+	
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	CROUCH_SHAPECAST.add_exception($".")
+	
+	_speed = SPEED_DEFAULT
 
 func _physics_process(delta: float) -> void:
 	# Add the gravity.
@@ -70,11 +79,11 @@ func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_vector("moveLeft", "moveRight", "moveForward", "moveBackward")
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	if direction:
-		velocity.x = direction.x * SPEED
-		velocity.z = direction.z * SPEED
+		velocity.x = direction.x * _speed
+		velocity.z = direction.z * _speed
 	else:
-		velocity.x = move_toward(velocity.x, 0, SPEED)
-		velocity.z = move_toward(velocity.z, 0, SPEED)
+		velocity.x = move_toward(velocity.x, 0, _speed)
+		velocity.z = move_toward(velocity.z, 0, _speed)
 
 	move_and_slide()
 
@@ -89,10 +98,19 @@ func crouching(state : bool):
 		true:
 			ANIMATION_PLAYER.play("crouch", -1, CROUCH_SPEED)
 			FOXY_ANIMATION_PLAYER.play("crouch", -1, CROUCH_SPEED)
+			set_movement_speed("crouching")
 		false:
 			ANIMATION_PLAYER.play("crouch", -1, -CROUCH_SPEED, true)
 			FOXY_ANIMATION_PLAYER.play("crouch", -1, -CROUCH_SPEED, true)
+			set_movement_speed("default")
 
 func _on_animation_player_animation_started(anim_name: StringName) -> void:
 	if anim_name == "crouch":
 		_is_crouching = !_is_crouching
+
+func set_movement_speed(state : String):
+	match state:
+		"default":
+			_speed = SPEED_DEFAULT
+		"crouching":
+			_speed = SPEED_CROUCH

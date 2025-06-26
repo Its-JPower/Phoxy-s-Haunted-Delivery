@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dsw2ry788jwxn"
-path.s3tc="res://.godot/imported/Foxy_Foxy Texture.png-ea7f206d04d28c19a96d2ac97f777f06.s3tc.ctex"
+uid="uid://cbks5i58pikxr"
+path.s3tc="res://.godot/imported/NewFoxy_Foxy Texture.png-eb2c28af73e9fba4b0a6a2e09caa52fd.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -14,8 +14,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://Assets/Foxy_Foxy Texture.png"
-dest_files=["res://.godot/imported/Foxy_Foxy Texture.png-ea7f206d04d28c19a96d2ac97f777f06.s3tc.ctex"]
+source_file="res://NewFoxy_Foxy Texture.png"
+dest_files=["res://.godot/imported/NewFoxy_Foxy Texture.png-eb2c28af73e9fba4b0a6a2e09caa52fd.s3tc.ctex"]
 
 [params]
 
