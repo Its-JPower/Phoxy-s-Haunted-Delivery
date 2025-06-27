@@ -7,17 +7,19 @@ extends Node
 var states: Dictionary = {}
 
 func _ready() -> void:
+	print("Current state at start:", CURRENT_STATE)
 	for child in get_children():
 		if child is State:
 			states[child.name] = child
 			child.transition.connect(on_child_transition)
 		else:
-			push_warning("Stae machine contains incompatible child node")
+			push_warning("State machine contains incompatible child node")
 	
 	CURRENT_STATE.enter()
 
 func _process(delta):
 	CURRENT_STATE.update(delta)
+	Global.debug.add_property("CurrentState", CURRENT_STATE.name, 1)
 
 func _physics_process(delta):
 	CURRENT_STATE.physics_update(delta)

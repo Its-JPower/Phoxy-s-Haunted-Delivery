@@ -1,8 +1,10 @@
-[gd_scene load_steps=11 format=3 uid="uid://u3k6kqv5qe3t"]
+[gd_scene load_steps=13 format=3 uid="uid://u3k6kqv5qe3t"]
 
-[ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scenes/newplayer.gd" id="1_e21d1"]
+[ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scripts/newplayer.gd" id="1_e21d1"]
 [ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://NewFoxy.glb" id="2_e21d1"]
+[ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="3_42d52"]
 [ext_resource type="Script" uid="uid://b0ejrbscki38d" path="res://Scripts/state_machine.gd" id="3_qf216"]
+[ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://Scripts/debug.gd" id="4_kjndv"]
 [ext_resource type="Script" uid="uid://khbj83b8frgx" path="res://Scripts/idle_player_state.gd" id="4_pcky6"]
 [ext_resource type="Script" uid="uid://t6snmwxa8sia" path="res://Scripts/walking_player_state.gd" id="5_rbx2y"]
 
@@ -89,25 +91,25 @@ transform = Transform3D(-0.1, 0, -8.74228e-09, 0, 0.1, 0, 8.74228e-09, 0, -0.1, 
 [node name="Skeleton3D" parent="CollisionShape3D/NewFoxy/Foxy Armature" index="0"]
 bones/0/position = Vector3(0, 8.52441, 0)
 bones/0/rotation = Quaternion(-2.98023e-08, 0, 0, 1)
-bones/2/rotation = Quaternion(0.0375937, 0, 0, 0.999293)
-bones/3/rotation = Quaternion(0.261733, 2.30108e-07, 6.24021e-08, 0.96514)
+bones/1/rotation = Quaternion(-0.0309646, 0, 0, 0.99952)
+bones/2/rotation = Quaternion(0.00636322, 0, 0, 0.99998)
 bones/6/rotation = Quaternion(0.592822, 0.49749, 0.598987, -0.205621)
-bones/14/rotation = Quaternion(-0.00358223, -0.101303, 0.600125, 0.793457)
-bones/15/rotation = Quaternion(0.190943, 0.724763, 0.180971, 0.636795)
-bones/16/rotation = Quaternion(-0.0143233, 0.00462061, -0.0477911, 0.998744)
-bones/18/rotation = Quaternion(0.131052, -0.0712463, -0.60644, 0.781012)
-bones/19/rotation = Quaternion(0.203579, -0.724336, -0.193384, 0.629679)
-bones/20/rotation = Quaternion(-0.0141363, -0.0373, -0.0808891, 0.995925)
-bones/33/rotation = Quaternion(0.686614, -0.25891, -0.632248, 0.248573)
-bones/34/position = Vector3(-2.19644e-07, 4.21304, -1.6867e-07)
-bones/34/rotation = Quaternion(0.227593, 0.664237, -0.227001, 0.674878)
-bones/35/rotation = Quaternion(-0.486779, 0.0566529, 0.0720004, 0.868708)
-bones/36/rotation = Quaternion(-0.0267554, 0.847007, -0.525624, -0.0747189)
-bones/37/rotation = Quaternion(0.72134, -0.049044, 0.687435, -0.068526)
-bones/38/position = Vector3(1.01589e-07, 4.21304, -3.54195e-08)
-bones/38/rotation = Quaternion(0.145602, -0.689236, 0.146576, 0.694456)
-bones/39/rotation = Quaternion(-0.566425, -0.0651038, -0.0641589, 0.819029)
-bones/40/rotation = Quaternion(0.0272285, 0.822569, -0.56175, 0.0841191)
+bones/14/rotation = Quaternion(-0.0238012, -0.16128, 0.595013, 0.787008)
+bones/15/rotation = Quaternion(0.33907, 0.704834, 0.299562, 0.546355)
+bones/16/rotation = Quaternion(0.0017908, 0.00577532, -0.0488194, 0.998789)
+bones/18/rotation = Quaternion(0.0426316, 0.0777185, -0.603776, 0.79221)
+bones/19/rotation = Quaternion(0.350617, -0.701647, -0.309938, 0.537305)
+bones/20/rotation = Quaternion(-0.210425, -0.106498, -0.0497061, 0.97052)
+bones/33/rotation = Quaternion(0.70704, 0.00693499, -0.706535, -0.0292223)
+bones/34/position = Vector3(-3.33859e-07, 4.21304, 7.02985e-08)
+bones/34/rotation = Quaternion(0.220087, 0.66427, -0.232931, 0.675315)
+bones/35/rotation = Quaternion(-0.406643, 0.0490191, 0.076268, 0.909077)
+bones/36/rotation = Quaternion(-0.0280171, 0.790443, -0.604931, -0.0920545)
+bones/37/rotation = Quaternion(0.707284, 0.044748, 0.705151, 0.0225485)
+bones/38/position = Vector3(-5.82945e-07, 4.21304, -7.50539e-08)
+bones/38/rotation = Quaternion(0.223174, -0.663154, 0.235998, 0.674332)
+bones/39/rotation = Quaternion(-0.44612, -0.0504111, -0.0757177, 0.890339)
+bones/40/rotation = Quaternion(0.0287395, 0.769229, -0.630754, 0.098039)
 
 [node name="Foxy" parent="CollisionShape3D/NewFoxy/Foxy Armature/Skeleton3D" index="0"]
 layers = 2
@@ -128,6 +130,34 @@ libraries = {
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 shape = SubResource("SphereShape3D_e21d1")
 target_position = Vector3(0, 0.5, 0)
+
+[node name="UserInterface" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Reticle" type="CenterContainer" parent="UserInterface"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DebugPanel" type="PanelContainer" parent="UserInterface"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 210.0
+offset_bottom = 50.0
+theme = ExtResource("3_42d52")
+script = ExtResource("4_kjndv")
+
+[node name="MarginContainer" type="MarginContainer" parent="UserInterface/DebugPanel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UserInterface/DebugPanel/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="PlayerStateMachine" type="Node" parent="." node_paths=PackedStringArray("CURRENT_STATE")]
 script = ExtResource("3_qf216")

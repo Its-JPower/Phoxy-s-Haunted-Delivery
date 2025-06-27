@@ -7,7 +7,7 @@ extends CharacterBody3D
 @export var JUMP_VELOCITY : float = 4.5
 @export_range(5,10,0.1) var CROUCH_SPEED : float = 7.0
 @export var MOUSE_SENSITIVITY : float = 0.5
-@export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
+#@export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
 @export var TILT_UPPER_LIMIT := deg_to_rad(-90.0)
 @export var CAMERA_CONTROLLER : Camera3D
 @export var ANIMATION_PLAYER : AnimationPlayer
@@ -42,7 +42,7 @@ func _input(event):
 
 func _update_camera(delta):
 	_mouse_rotation.x += _tilt_input * delta
-	_mouse_rotation.x = clamp(_mouse_rotation.x, TILT_LOWER_LIMIT, TILT_UPPER_LIMIT)
+#	_mouse_rotation.x = clamp(_mouse_rotation.x, TILT_LOWER_LIMIT, TILT_UPPER_LIMIT)
 	_mouse_rotation.y += _rotation_input * delta
 	
 	_player_rotation = Vector3(0.0,_mouse_rotation.y,0.0)
@@ -66,10 +66,14 @@ func _ready():
 	_speed = SPEED_DEFAULT
 
 func _physics_process(delta: float) -> void:
+	
+	Global.debug.add_property("MovementSpeed", _speed, 1)
+	Global.debug.add_property("MouseRotation", _mouse_rotation, 2)
+	
+	_update_camera(delta)
 	# Add the gravity.
 	if not is_on_floor():
 		velocity += get_gravity() * delta
-	_update_camera(delta)
 	# Handle jump.
 	if Input.is_action_just_pressed("jump") and is_on_floor() and _is_crouching == false:
 		velocity.y = JUMP_VELOCITY

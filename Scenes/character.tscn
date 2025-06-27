@@ -1,8 +1,8 @@
 [gd_scene load_steps=21 format=3 uid="uid://cc1m2a1obsyn4"]
 
-[ext_resource type="Script" uid="uid://ca0fmy72vng4n" path="res://Scenes/character.gd" id="1_0t4e8"]
-[ext_resource type="Script" uid="uid://bo5a7jqdrbami" path="res://Scenes/EditorModule.gd" id="3_v3ckk"]
-[ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://Scenes/debug.gd" id="3_x1wcc"]
+[ext_resource type="Script" uid="uid://ca0fmy72vng4n" path="res://Scripts/character.gd" id="1_0t4e8"]
+[ext_resource type="Script" uid="uid://bo5a7jqdrbami" path="res://Scripts/EditorModule.gd" id="3_v3ckk"]
+[ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://Scripts/debug.gd" id="3_x1wcc"]
 [ext_resource type="PackedScene" uid="uid://ciiihfi0bdnf8" path="res://Assets/Foxy/Foxy_fps.glb" id="4_bx7cj"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_uy03j"]
