@@ -1,8 +1,7 @@
-class_name PlayerWalkingState
+class_name WalkingPlayerState
 
 extends State2
 
 func update(delta):
-	print("Walking update")
-	if Global.player.velocity.length() == 0.0:
+	if Global.player.velocity.length() == 0.0 and Global.player.is_on_floor():
 		transition.emit("IdlePlayerState")

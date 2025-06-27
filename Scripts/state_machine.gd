@@ -7,9 +7,8 @@ extends Node
 var states: Dictionary = {}
 
 func _ready() -> void:
-	print("Current state at start:", CURRENT_STATE)
 	for child in get_children():
-		if child is State:
+		if child is State2:
 			states[child.name] = child
 			child.transition.connect(on_child_transition)
 		else:

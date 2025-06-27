@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://u3k6kqv5qe3t"]
+[gd_scene load_steps=14 format=3 uid="uid://u3k6kqv5qe3t"]
 
 [ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scripts/newplayer.gd" id="1_e21d1"]
 [ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://NewFoxy.glb" id="2_e21d1"]
@@ -36,6 +36,39 @@ tracks/1/keys = {
 "update": 0,
 "values": [2.0]
 }
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position:x")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Camera3D:position:y")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.816911, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Camera3D:position:z")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
 
 [sub_resource type="Animation" id="Animation_e21d1"]
 resource_name = "crouch"
@@ -64,9 +97,48 @@ tracks/1/keys = {
 "values": [2.0, 1.5]
 }
 
+[sub_resource type="Animation" id="Animation_kjndv"]
+resource_name = "Walking"
+length = 2.0
+loop_mode = 1
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Camera3D:position:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0, 0),
+"points": PackedFloat32Array(0.0147786, -0.25, 0, 0.25, 0, 0, -0.266667, 0.00100017, 0.25, 0, -0.0152583, -0.25, 0, 0.25, 0, 0, -0.266667, 0.00100017, 0.25, 0, 0.0153297, -0.266667, 0.00100017, 0.25, 0),
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Camera3D:position:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0, 0),
+"points": PackedFloat32Array(0.810343, -0.25, 0, 0.233333, 0.0146051, 0.830735, -0.25, 0, 0.25, 0, 0.810067, -0.233333, 0.020392, 0.233333, 0.0170852, 0.829081, -0.25, 0, 0.25, 0, 0.810894, -0.233333, 0.0085426, 0.25, 0),
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Camera3D:position:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0, 0, 0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 0.5, 1, 1.5, 2)
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_pcky6"]
 _data = {
 &"RESET": SubResource("Animation_qf216"),
+&"Walking": SubResource("Animation_kjndv"),
 &"crouch": SubResource("Animation_e21d1")
 }
 
