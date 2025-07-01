@@ -6,7 +6,6 @@ class_name Player extends CharacterBody3D
 @export var SPEED_CROUCH : float = 2.0
 @export var ACCELERATION : float = 0.1
 @export var DECELERATION : float = 0.25
-#@export var TOGGLE_CROUCH : bool = true
 @export var JUMP_VELOCITY : float = 4.5
 @export_range(5,10,0.1) var CROUCH_SPEED : float = 7.0
 @export var MOUSE_SENSITIVITY : float = 0.5
@@ -25,6 +24,7 @@ var _rotation_input : float
 var _tilt_input : float
 var _player_rotation : Vector3 
 var _camera_rotation : Vector3
+var _current_rotation : float
 
 var _is_crouching : bool = false
 
@@ -35,6 +35,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_tilt_input = -event.relative.y * MOUSE_SENSITIVITY
 
 func _update_camera(delta):
+	_current_rotation = _rotation_input
 	_mouse_rotation.x += _tilt_input * delta
 	_mouse_rotation.x = clamp(_mouse_rotation.x, TILT_LOWER_LIMIT, TILT_UPPER_LIMIT)
 	_mouse_rotation.y += _rotation_input * delta
@@ -68,10 +69,16 @@ func _physics_process(delta: float) -> void:
 	_update_camera(delta)
 
 	if not is_on_floor():
-		velocity += get_gravity() * delta
+		pass
 
-	var input_dir := Input.get_vector("moveLeft", "moveRight", "moveForward", "moveBackward")
+func update_gravity(delta) -> void:
+	velocity += get_gravity() * delta
+
+func update_input(speed: float, acceleration: float, deceleration: float) -> void:
+	var input_dir = Input.get_vector("moveLeft", "moveRight", "moveForward", "moveBackward")
+	
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
 	if direction:
 		velocity.x = lerp(velocity.x,direction.x*_speed, ACCELERATION)
 		velocity.z = lerp(velocity.z,direction.z*_speed, ACCELERATION)
@@ -79,4 +86,5 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, DECELERATION)
 		velocity.z = move_toward(velocity.z, 0, DECELERATION)
 
+func update_velocity() -> void:
 	move_and_slide()
