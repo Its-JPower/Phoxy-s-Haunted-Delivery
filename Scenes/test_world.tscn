@@ -110,4 +110,9 @@ material = SubResource("StandardMaterial3D_7j4uu")
 
 [node name="NewPlayerCharacter" parent="." instance=ExtResource("4_mq1bj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.83917, 0)
-TOGGLE_CROUCH = false
+
+[node name="SprintingPlayerState" parent="NewPlayerCharacter/PlayerStateMachine" index="2"]
+TOP_ANIMATION_SPEED = null
+
+[editable path="NewPlayerCharacter"]
+[editable path="NewPlayerCharacter/CollisionShape3D/NewFoxy"]
