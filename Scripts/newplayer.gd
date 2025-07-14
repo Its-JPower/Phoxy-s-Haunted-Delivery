@@ -80,11 +80,11 @@ func update_input(speed: float, acceleration: float, deceleration: float) -> voi
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:
-		velocity.x = lerp(velocity.x,direction.x*_speed, ACCELERATION)
-		velocity.z = lerp(velocity.z,direction.z*_speed, ACCELERATION)
+		velocity.x = lerp(velocity.x,direction.x*speed, acceleration)
+		velocity.z = lerp(velocity.z,direction.z*speed, acceleration)
 	else:
-		velocity.x = move_toward(velocity.x, 0, DECELERATION)
-		velocity.z = move_toward(velocity.z, 0, DECELERATION)
+		velocity.x = move_toward(velocity.x, 0, deceleration)
+		velocity.z = move_toward(velocity.z, 0, deceleration)
 
 func update_velocity() -> void:
 	move_and_slide()

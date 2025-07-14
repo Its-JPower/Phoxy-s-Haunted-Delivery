@@ -16,7 +16,7 @@ func _ready():
 	await owner.ready
 	speed_index = ANIMATION.get_animation("Sliding").find_track("PlayerStateMachine/SlidingPlayerState:SPEED", Animation.TYPE_VALUE)
 	print("Speed idx: " + str(speed_index))
-	rotation_index = ANIMATION.get_animation("Sliding").find_track("Camera3D:rotation", Animation.TYPE_VALUE)
+	rotation_index = ANIMATION.get_animation("Sliding").find_track("CameraController:rotation", Animation.TYPE_VALUE)
 	print("Rotation idx: " + str(rotation_index))
 
 func enter(previous_state) -> void:

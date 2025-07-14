@@ -15,8 +15,7 @@ func enter(previous_state) -> void:
 		ANIMATION.play("crouch", -1.0, CROUCH_SPEED)
 	else:
 		ANIMATION.play("crouch")
-		ANIMATION.seek(1, true) # Start *almost* crouched to match slide end
-		# Optional: use a blend time
+		ANIMATION.seek(1, true)
 
 func exit() -> void:
 	RELEASED = false
@@ -33,13 +32,13 @@ func update(delta):
 		uncrouch()
 
 func uncrouch():
-	if CROUCH_SHAPECAST.is_colliding() == false:
-		ANIMATION.play("crouch", -1.0, -CROUCH_SPEED, true)
-		await ANIMATION.animation_finished
-		if PLAYER.velocity.length() == 0:
-			transition.emit("IdlePlayerState")
-		else:
-			transition.emit("WalkingPlayerState")
-	elif CROUCH_SHAPECAST.is_colliding() == true:
+	if CROUCH_SHAPECAST.is_colliding():
 		await get_tree().create_timer(0.1).timeout
 		uncrouch()
+		return
+	ANIMATION.play("crouch", -1.0, -CROUCH_SPEED, true)
+	await ANIMATION.animation_finished
+	if PLAYER.velocity.length() == 0:
+		transition.emit("IdlePlayerState")
+	else:
+		transition.emit("WalkingPlayerState")

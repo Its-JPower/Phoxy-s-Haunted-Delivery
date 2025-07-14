@@ -8,8 +8,11 @@ extends PlayerMovementState
 @export var TOP_ANIMATION_SPEED : float = 3
 
 func enter(previous_state) -> void:
-	ANIMATION.play("Walking",.5,1.0)
-	Global.player._speed = Global.player.SPEED_SPRINTING
+	if ANIMATION.is_playing() and ANIMATION.current_animation == "JumpEnd":
+		await ANIMATION.animation_finished
+		ANIMATION.play("Walking",.5,1.0)
+	else:
+		ANIMATION.play("Walking",.5,1.0)
 
 func update(delta):
 	PLAYER.update_gravity(delta)
@@ -21,6 +24,8 @@ func update(delta):
 		transition.emit("IdlePlayerState")
 	if Input.is_action_just_pressed("crouch") and PLAYER.velocity.length() > 6:
 		transition.emit("SlidingPlayerState")
+	if Input.is_action_just_pressed("jump") and PLAYER.is_on_floor():
+		transition.emit("JumpingPlayerState")
 
 func set_animation_speed(spd):
 	var alpha = remap(spd, 0.0, SPEED, 0.0, 1.0)
