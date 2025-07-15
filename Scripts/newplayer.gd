@@ -15,7 +15,7 @@ class_name Player extends CharacterBody3D
 @export var ANIMATION_PLAYER : AnimationPlayer
 @export var FOXY_ANIMATION_PLAYER : AnimationPlayer
 @export var CROUCH_SHAPECAST : ShapeCast3D
-
+@export var GRAVITY : float = -11.0
 
 var _speed : float
 var _mouse_input : bool = false
@@ -25,6 +25,9 @@ var _tilt_input : float
 var _player_rotation : Vector3 
 var _camera_rotation : Vector3
 var _current_rotation : float
+var _momentum: Vector3 = Vector3.ZERO
+
+var wall_normal
 
 var _is_crouching : bool = false
 
@@ -59,7 +62,6 @@ func _ready():
 	_speed = SPEED_DEFAULT
 
 	CROUCH_SHAPECAST.add_exception($".")
-	
 
 func _physics_process(delta: float) -> void:
 	
@@ -67,24 +69,30 @@ func _physics_process(delta: float) -> void:
 	Global.debug.add_property("Velocity", "%.2f" % velocity.length(), 3)	
 	
 	_update_camera(delta)
-
+	
 	if not is_on_floor():
-		pass
+		_momentum = _momentum.move_toward(Vector3.ZERO, DECELERATION * 0.5)
 
 func update_gravity(delta) -> void:
-	velocity += get_gravity() * delta
+	velocity.y += GRAVITY * delta
 
 func update_input(speed: float, acceleration: float, deceleration: float) -> void:
 	var input_dir = Input.get_vector("moveLeft", "moveRight", "moveForward", "moveBackward")
-	
 	var direction := (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	
-	if direction:
-		velocity.x = lerp(velocity.x,direction.x*speed, acceleration)
-		velocity.z = lerp(velocity.z,direction.z*speed, acceleration)
+
+	var is_airborne = not is_on_floor()
+
+	if is_airborne:
+		if direction != Vector3.ZERO:
+			_momentum = _momentum.lerp(direction * speed, acceleration * 0.3)
 	else:
-		velocity.x = move_toward(velocity.x, 0, deceleration)
-		velocity.z = move_toward(velocity.z, 0, deceleration)
+		if direction != Vector3.ZERO:
+			_momentum = _momentum.lerp(direction * speed, acceleration)
+		else:
+			_momentum = _momentum.move_toward(Vector3.ZERO, deceleration)
+	velocity.x = _momentum.x
+	velocity.z = _momentum.z
+
 
 func update_velocity() -> void:
 	move_and_slide()

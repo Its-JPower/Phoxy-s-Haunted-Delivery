@@ -134,9 +134,6 @@ bones/38/rotation = Quaternion(0.0838226, -0.698634, 0.0974543, 0.703838)
 bones/39/rotation = Quaternion(-0.409171, -0.0492599, -0.0761497, 0.907939)
 bones/40/rotation = Quaternion(0.0269418, 0.854409, -0.514091, 0.0704965)
 
-[node name="Camera3D" parent="NewPlayerCharacter/CameraController" index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.027, 0)
-
 [node name="AnimationPlayer" parent="NewPlayerCharacter" index="2"]
 blend_times = [&"RESET", &"JumpStart", 0.1, &"RESET", &"Walking", 0.5]
 

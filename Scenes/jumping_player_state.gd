@@ -33,5 +33,6 @@ func update(delta):
 		#transition.emit("CrouchingPlayerState")
 	
 	if PLAYER.is_on_floor():
-		ANIMATION.play("JumpEnd")
 		transition.emit("IdlePlayerState")
+	elif Input.is_action_pressed("jump") and Input.is_action_pressed("moveForward") and PLAYER.is_on_wall():
+		transition.emit("WallRunPlayerState")

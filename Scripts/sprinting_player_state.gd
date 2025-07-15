@@ -19,7 +19,7 @@ func update(delta):
 	PLAYER.update_input(SPEED, ACCELERATION, DECELERATION)
 	PLAYER.update_velocity()
 	
-	set_animation_speed(Global.player.velocity.length())
+	set_animation_speed(PLAYER._momentum.length())
 	if Global.player.velocity.length() == 0.0 and Global.player.is_on_floor():
 		transition.emit("IdlePlayerState")
 	if Input.is_action_just_pressed("crouch") and PLAYER.velocity.length() > 6:

@@ -9,9 +9,9 @@ extends PlayerMovementState
 func enter(previous_state) -> void:
 	if ANIMATION.is_playing() and ANIMATION.current_animation == "JumpEnd":
 		await ANIMATION.animation_finished
-		ANIMATION.pause()
+		ANIMATION.play("Idle")
 	else:
-		ANIMATION.pause()
+		ANIMATION.play("Idle")
 
 func update(delta):
 	PLAYER.update_gravity(delta)
