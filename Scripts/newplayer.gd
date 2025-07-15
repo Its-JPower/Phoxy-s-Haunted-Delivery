@@ -16,6 +16,12 @@ class_name Player extends CharacterBody3D
 @export var FOXY_ANIMATION_PLAYER : AnimationPlayer
 @export var CROUCH_SHAPECAST : ShapeCast3D
 @export var GRAVITY : float = -11.0
+@export var FLASHLIGHT : SpotLight3D
+@export var AUDIOSTREAM : AudioStreamPlayer
+
+#region AudioVars
+var flashlight_audio = preload("res://Assets/Sound/flashlight.mp3")
+#endregion
 
 var _speed : float
 var _mouse_input : bool = false
@@ -72,6 +78,13 @@ func _physics_process(delta: float) -> void:
 	
 	if not is_on_floor():
 		_momentum = _momentum.move_toward(Vector3.ZERO, DECELERATION * 0.5)
+	if Input.is_action_just_pressed("toggleFlashlight"):
+		AUDIOSTREAM.stream = flashlight_audio
+		AUDIOSTREAM.play(0)
+		if FLASHLIGHT.light_energy == 1.0:
+			FLASHLIGHT.light_energy = 0.0
+		else:
+			FLASHLIGHT.light_energy = 1.0
 
 func update_gravity(delta) -> void:
 	velocity.y += GRAVITY * delta

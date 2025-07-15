@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://drrldetdmv4rv"]
 
+[ext_resource type="PackedScene" uid="uid://u3k6kqv5qe3t" path="res://Scenes/newplayer.tscn" id="1_bi5fs"]
 [ext_resource type="PackedScene" uid="uid://di0yabw5w8rmk" path="res://Scenes/maze.tscn" id="2_bi5fs"]
-[ext_resource type="PackedScene" uid="uid://bwggrf7sbmkcv" path="res://addons/PlayerCharacter/PlayerCharacterScene.tscn" id="2_okq71"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bi5fs"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -11,7 +11,8 @@ ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
 sky_material = SubResource("ProceduralSkyMaterial_bi5fs")
 
 [sub_resource type="Environment" id="Environment_wosnj"]
-background_mode = 2
+background_mode = 1
+background_color = Color(0.0687983, 0.0687983, 0.0687983, 1)
 sky = SubResource("Sky_okq71")
 tonemap_mode = 2
 glow_enabled = true
@@ -21,11 +22,7 @@ glow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_wosnj")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
-shadow_enabled = true
-
-[node name="PlayerCharacter" parent="." instance=ExtResource("2_okq71")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 13.0531, 93)
+[node name="NewPlayerCharacter" parent="." groups=["Player"] instance=ExtResource("1_bi5fs")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.77884, 1.87788)
 
 [node name="Maze" parent="." groups=["Maze"] instance=ExtResource("2_bi5fs")]
