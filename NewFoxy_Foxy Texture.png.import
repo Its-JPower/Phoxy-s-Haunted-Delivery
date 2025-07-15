@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvifr2kjnk52h"
-path.s3tc="res://.godot/imported/ROcket_THE GAOT.jpg-33e4389a00be3bbf7b84b149daaff753.s3tc.ctex"
+uid="uid://cbks5i58pikxr"
+path.s3tc="res://.godot/imported/NewFoxy_Foxy Texture.png-eb2c28af73e9fba4b0a6a2e09caa52fd.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "e5cd6c8f4d44c166c4f3de07c90bcdd7"
+"md5": "20b78cf050b46666364691f262948f4f"
 }
 
 [deps]
 
-source_file="res://Assets/Rocket/ROcket_THE GAOT.jpg"
-dest_files=["res://.godot/imported/ROcket_THE GAOT.jpg-33e4389a00be3bbf7b84b149daaff753.s3tc.ctex"]
+source_file="res://NewFoxy_Foxy Texture.png"
+dest_files=["res://.godot/imported/NewFoxy_Foxy Texture.png-eb2c28af73e9fba4b0a6a2e09caa52fd.s3tc.ctex"]
 
 [params]
 

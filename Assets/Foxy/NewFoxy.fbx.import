@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c47tf2aach3xt"
-path="res://.godot/imported/Foxy.glb-70c8c6b903a6c9f4098ecdb3912f6c84.scn"
+uid="uid://1uofvtsqcjkv"
+path="res://.godot/imported/NewFoxy.fbx-103db6d4280d52cab647bfcd4ebc89f5.scn"
 
 [deps]
 
-source_file="res://Assets/Foxy.glb"
-dest_files=["res://.godot/imported/Foxy.glb-70c8c6b903a6c9f4098ecdb3912f6c84.scn"]
+source_file="res://Assets/Foxy/NewFoxy.fbx"
+dest_files=["res://.godot/imported/NewFoxy.fbx-103db6d4280d52cab647bfcd4ebc89f5.scn"]
 
 [params]
 
@@ -28,10 +28,11 @@ meshes/force_disable_compression=false
 skins/use_named_skins=true
 animation/import=true
 animation/fps=30
-animation/trimming=false
+animation/trimming=true
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={}
-gltf/naming_version=1
-gltf/embedded_image_handling=1
+fbx/importer=0
+fbx/allow_geometry_helper_nodes=false
+fbx/embedded_image_handling=1

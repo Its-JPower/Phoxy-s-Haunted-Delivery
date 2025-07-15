@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dodbxij2nljbn"]
 
-[ext_resource type="Script" uid="uid://b7g2tpvm0tvgy" path="res://Scenes/rocket_ammo.gd" id="1_g3dwt"]
+[ext_resource type="Script" uid="uid://b7g2tpvm0tvgy" path="res://Scripts/rocket_ammo.gd" id="1_g3dwt"]
 [ext_resource type="ArrayMesh" uid="uid://tpb8ngo38p24" path="res://Assets/Rocket/rocket.res" id="2_xnwdp"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1wni5"]
