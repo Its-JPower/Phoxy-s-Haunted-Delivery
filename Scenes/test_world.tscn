@@ -117,5 +117,8 @@ blend_times = [&"RESET", &"JumpStart", 0.1, &"RESET", &"Walking", 0.5]
 [node name="ShapeCast3D" parent="NewPlayerCharacter" index="3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 
+[node name="UserInterface" parent="NewPlayerCharacter" index="4"]
+mouse_filter = 2
+
 [editable path="NewPlayerCharacter"]
 [editable path="NewPlayerCharacter/CollisionShape3D/NewFoxy"]

@@ -10,19 +10,23 @@ class_name Player extends CharacterBody3D
 @export_range(5,10,0.1) var CROUCH_SPEED : float = 7.0
 @export var MOUSE_SENSITIVITY : float = 0.5
 @export var TILT_LOWER_LIMIT := deg_to_rad(-90.0)
-@export var TILT_UPPER_LIMIT := deg_to_rad(-90.0)
+@export var TILT_UPPER_LIMIT := deg_to_rad(90.0)
 @export var CAMERA_CONTROLLER : Camera3D
 @export var ANIMATION_PLAYER : AnimationPlayer
 @export var FOXY_ANIMATION_PLAYER : AnimationPlayer
 @export var CROUCH_SHAPECAST : ShapeCast3D
 @export var GRAVITY : float = -11.0
+@export var STAMINABAR : ProgressBar
+@export var STAMINA : float = 100.0
+@export var MAX_STAMINA : float = 100.0
+@export var STAMINA_REGEN_RATE : float = 0.25
+@export var MAX_REGEN_RATE : float = 3.0
+@export var STAMINA_DEPLETION_RATE : float = 5.0
 @export var FLASHLIGHT : SpotLight3D
 @export var AUDIOSTREAM : AudioStreamPlayer
 
-#region AudioVars
-var flashlight_audio = preload("res://Assets/Sound/flashlight.mp3")
-#endregion
 
+var flashlight_audio
 var _speed : float
 var _mouse_input : bool = false
 var _mouse_rotation : Vector3
@@ -32,6 +36,7 @@ var _player_rotation : Vector3
 var _camera_rotation : Vector3
 var _current_rotation : float
 var _momentum: Vector3 = Vector3.ZERO
+var can_use_stamina: bool = true
 
 var wall_normal
 
@@ -106,6 +111,25 @@ func update_input(speed: float, acceleration: float, deceleration: float) -> voi
 	velocity.x = _momentum.x
 	velocity.z = _momentum.z
 
+func manage_stamina(delta) -> void:
+	STAMINABAR.value = STAMINA
+
+func handle_stamina(delta):
+	if STAMINA == 0:
+		can_use_stamina = false
+	elif STAMINA >= MAX_STAMINA:
+		can_use_stamina = true
+	if Input.is_action_pressed("sprint") and can_use_stamina == true:
+		STAMINA -= STAMINA_DEPLETION_RATE * delta
+		STAMINA = max(STAMINA, 0)
+	else:
+		STAMINA += regen_stamina(delta)
+		STAMINA = min(STAMINA, MAX_STAMINA)
+	STAMINABAR.value = STAMINA
+
+func regen_stamina(_delta):
+	var regen = STAMINA_REGEN_RATE * pow(2,STAMINA / MAX_STAMINA)
+	return min(regen, MAX_REGEN_RATE)
 
 func update_velocity() -> void:
 	move_and_slide()

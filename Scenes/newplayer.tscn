@@ -351,13 +351,14 @@ _data = {
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_e21d1"]
 
-[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "FLASHLIGHT", "AUDIOSTREAM")]
+[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM")]
 script = ExtResource("1_e21d1")
 TILT_UPPER_LIMIT = 1.571
 CAMERA_CONTROLLER = NodePath("CameraController/Camera3D")
 ANIMATION_PLAYER = NodePath("AnimationPlayer")
 FOXY_ANIMATION_PLAYER = NodePath("CollisionShape3D/NewFoxy/AnimationPlayer")
 CROUCH_SHAPECAST = NodePath("ShapeCast3D")
+STAMINABAR = NodePath("UserInterface/StaminaBar")
 FLASHLIGHT = NodePath("CameraController/Camera3D/Flashlight")
 AUDIOSTREAM = NodePath("AudioStreamPlayer")
 
@@ -420,9 +421,11 @@ target_position = Vector3(0, 0.5, 0)
 
 [node name="UserInterface" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Reticle" type="CenterContainer" parent="UserInterface"]
 layout_mode = 0
@@ -445,6 +448,20 @@ layout_mode = 2
 [node name="VBoxContainer" type="VBoxContainer" parent="UserInterface/DebugPanel/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="StaminaBar" type="ProgressBar" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -27.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+value = 100.0
 
 [node name="PlayerStateMachine" type="Node" parent="." node_paths=PackedStringArray("CURRENT_STATE")]
 script = ExtResource("3_qf216")

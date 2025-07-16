@@ -15,6 +15,7 @@ func enter(previous_state) -> void:
 		ANIMATION.play("Walking",.5,1.0)
 
 func update(delta):
+	PLAYER.handle_stamina(delta)
 	PLAYER.update_gravity(delta)
 	PLAYER.update_input(SPEED, ACCELERATION, DECELERATION)
 	PLAYER.update_velocity()
