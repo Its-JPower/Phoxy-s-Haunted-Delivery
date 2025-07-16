@@ -1,7 +1,8 @@
-[gd_scene load_steps=6 format=3 uid="uid://drrldetdmv4rv"]
+[gd_scene load_steps=7 format=3 uid="uid://drrldetdmv4rv"]
 
 [ext_resource type="PackedScene" uid="uid://di0yabw5w8rmk" path="res://Scenes/maze.tscn" id="2_bi5fs"]
 [ext_resource type="PackedScene" uid="uid://bwggrf7sbmkcv" path="res://addons/PlayerCharacter/PlayerCharacterScene.tscn" id="2_okq71"]
+[ext_resource type="PackedScene" uid="uid://dnsxenqk0abab" path="res://Scenes/Speakers.tscn" id="3_okq71"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bi5fs"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -29,3 +30,6 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 13.0531, 93)
 
 [node name="Maze" parent="." groups=["Maze"] instance=ExtResource("2_bi5fs")]
+
+[node name="Node3D" parent="." instance=ExtResource("3_okq71")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0.1, 86)

@@ -1,8 +1,8 @@
-[gd_scene load_steps=263 format=4 uid="uid://c72crmv1fn7xg"]
+[gd_scene load_steps=263 format=4 uid="uid://by6t7stu7nevh"]
 
-[ext_resource type="Texture2D" uid="uid://bw7fn035aknkq" path="res://maze/working maze_bakedMaze_diffuse.png" id="1_pcsvk"]
-[ext_resource type="Texture2D" uid="uid://k36s1ebsrwq4" path="res://maze/working maze_bakedMaze_specularGlossiness_3.png" id="2_wad8i"]
-[ext_resource type="Texture2D" uid="uid://bpd7vmx4b7v2x" path="res://maze/working maze_bakedMaze_normal.png" id="3_ptarf"]
+[ext_resource type="Texture2D" uid="uid://bw7fn035aknkq" path="res://Assets/maze/working maze_bakedMaze_diffuse.png" id="1_pcsvk"]
+[ext_resource type="Texture2D" uid="uid://k36s1ebsrwq4" path="res://Assets/maze/working maze_bakedMaze_specularGlossiness_3.png" id="2_wad8i"]
+[ext_resource type="Texture2D" uid="uid://bpd7vmx4b7v2x" path="res://Assets/maze/working maze_bakedMaze_normal.png" id="3_ptarf"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_44l3w"]
 resource_name = "bakedMaze"
