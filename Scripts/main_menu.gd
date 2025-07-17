@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var btn_options: Button = $Menu/MarginContainer/VBoxContainer/btn_options
 @onready var btn_quit: Button = $Menu/MarginContainer/VBoxContainer/btn_quit
 @onready var audio_player: AudioStreamPlayer = $Menu/MarginContainer/VBoxContainer/audio_player
+@onready var animation_player: AnimationPlayer = $Background/FlickeringLight/AnimationPlayer
 
 var rotation_speed = .125
 
@@ -13,6 +14,7 @@ var rotation_speed = .125
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	foxy_anim.play("idle", .25, 0.06125)
+	animation_player.play("ad")
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -24,7 +26,7 @@ func _process(delta: float) -> void:
 
 
 func _on_play_pressed() -> void:
-	get_tree().change_scene_to_file("res://addons/Map/TemplateMapScene.tscn")
+	get_tree().change_scene_to_file("res://Scenes/level_one.tscn")
 
 func _on_options_pressed() -> void:
 	pass # Replace with function body.

@@ -175,7 +175,7 @@ shadow_enabled = true
 libraries = {
 &"": SubResource("AnimationLibrary_n45e2")
 }
-autoplay = "ad"
+autoplay = "flickering"
 
 [node name="GPUParticles3D" type="GPUParticles3D" parent="Background/FlickeringLight"]
 amount = 2
