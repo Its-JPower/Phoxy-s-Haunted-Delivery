@@ -1,10 +1,10 @@
-[gd_scene load_steps=21 format=3 uid="uid://d3asbswv43kqu"]
+[gd_scene load_steps=20 format=3 uid="uid://d3asbswv43kqu"]
 
 [ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scripts/main_menu.gd" id="1_48xlc"]
 [ext_resource type="PackedScene" uid="uid://c5qk5flxkt7fu" path="res://Scenes/foxy.tscn" id="2_1ehe0"]
 [ext_resource type="Texture2D" uid="uid://cworn5l5sp6ek" path="res://Assets/Other/white_circle.png" id="3_ce3w2"]
 [ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_ce3w2"]
-[ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
+[ext_resource type="PackedScene" uid="uid://bl7tlvrwidnmb" path="res://Scenes/menuui.tscn" id="5_opfnp"]
 [ext_resource type="AudioStream" uid="uid://8r2ixye2qqwv" path="res://Assets/Audio/main_menu_music.mp3" id="6_opfnp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
@@ -35,35 +35,6 @@ tracks/0/keys = {
 "update": 0,
 "values": [1.0]
 }
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("../../Menu/AD:scale")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_opfnp"]
-resource_name = "ad"
-length = 2.0
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("../../Menu/AD:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1, 2),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(1.125, 1.125), Vector2(1, 1)]
-}
 
 [sub_resource type="Animation" id="Animation_1ehe0"]
 resource_name = "flickering"
@@ -85,7 +56,6 @@ tracks/0/keys = {
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_n45e2"]
 _data = {
 &"RESET": SubResource("Animation_ce3w2"),
-&"ad": SubResource("Animation_opfnp"),
 &"flickering": SubResource("Animation_1ehe0")
 }
 
@@ -196,96 +166,14 @@ transform = Transform3D(14.4006, 0, 0, 0, -0.218534, 0, 0, 0, -11.5744, -0.40515
 mesh = SubResource("PlaneMesh_n45e2")
 surface_material_override/0 = SubResource("StandardMaterial3D_opfnp")
 
-[node name="Menu" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="Menu"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 250
-theme_override_constants/margin_top = 100
-theme_override_constants/margin_right = 250
-theme_override_constants/margin_bottom = 100
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Menu/MarginContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Phoxy's Haunted Delivery"
-
-[node name="MarginContainer" type="MarginContainer" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_top = 45
-
-[node name="MarginContainer4" type="MarginContainer" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_top = 45
-
-[node name="btn_play" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-theme = ExtResource("5_n45e2")
-text = "Play Game"
-
-[node name="MarginContainer2" type="MarginContainer" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_top = 45
-
-[node name="btn_options" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-theme = ExtResource("5_n45e2")
-text = "Settings"
-
-[node name="MarginContainer3" type="MarginContainer" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/margin_top = 45
-
-[node name="btn_quit" type="Button" parent="Menu/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-text = "Quit"
-
-[node name="audio_player" type="AudioStreamPlayer" parent="Menu/MarginContainer/VBoxContainer"]
-volume_db = 5.0
-
-[node name="AD" type="Label" parent="Menu"]
-layout_mode = 2
-offset_left = 751.0
-offset_top = 85.0
-offset_right = 1032.0
-offset_bottom = 118.0
-rotation = 0.244346
-pivot_offset = Vector2(140.5, 16.5)
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-theme_override_font_sizes/font_size = 45
-text = "ALSO TRY SEREIN!"
+[node name="Menu" parent="." instance=ExtResource("5_opfnp")]
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6_opfnp")
 autoplay = true
 
-[connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_entered"]
-[connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_exited"]
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_play_pressed"]
-[connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_options" to="." method="_on_btn_options_mouse_entered"]
-[connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_options" to="." method="_on_btn_options_mouse_exited"]
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_options" to="." method="_on_options_pressed"]
-[connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_btn_quit_mouse_entered"]
-[connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_btn_quit_mouse_exited"]
 [connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_quit_pressed"]
+
+[editable path="Menu"]
