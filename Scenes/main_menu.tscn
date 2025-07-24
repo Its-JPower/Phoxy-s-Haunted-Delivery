@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://c5qk5flxkt7fu" path="res://Scenes/foxy.tscn" id="2_1ehe0"]
 [ext_resource type="Texture2D" uid="uid://cworn5l5sp6ek" path="res://Assets/Other/white_circle.png" id="3_ce3w2"]
 [ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_ce3w2"]
-[ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
+[ext_resource type="Theme" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
 [ext_resource type="AudioStream" uid="uid://8r2ixye2qqwv" path="res://Assets/Audio/main_menu_music.mp3" id="6_opfnp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
