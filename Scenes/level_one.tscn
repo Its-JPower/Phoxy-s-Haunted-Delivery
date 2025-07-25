@@ -103,9 +103,10 @@ _data = {
 &"RESET": SubResource("Animation_ik1yt")
 }
 
-[node name="LevelOne" type="Node3D" node_paths=PackedStringArray("ANIM_PLAYER")]
+[node name="LevelOne" type="Node3D" node_paths=PackedStringArray("ANIM_PLAYER", "AUDIO_PLAYER")]
 script = ExtResource("1_hi7j2")
 ANIM_PLAYER = NodePath("AnimationPlayer")
+AUDIO_PLAYER = NodePath("AudioStreamPlayer")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_b7vm3")
@@ -120,6 +121,8 @@ libraries = {
 &"": SubResource("AnimationLibrary_b7vm3")
 }
 autoplay = "LevelOneStart"
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
 [editable path="NewPlayerCharacter"]
 [editable path="NewPlayerCharacter/CollisionShape3D/NewFoxy"]

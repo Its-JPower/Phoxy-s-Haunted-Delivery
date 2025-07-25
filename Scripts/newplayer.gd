@@ -24,9 +24,12 @@ class_name Player extends CharacterBody3D
 @export var STAMINA_DEPLETION_RATE : float = 5.0
 @export var FLASHLIGHT : SpotLight3D
 @export var AUDIOSTREAM : AudioStreamPlayer
+@export var FOOTSTEP_AUDIO_PLAYER : AudioStreamPlayer3D
 
 
-var flashlight_audio
+@onready var FOOTSTEP_AUDIO1 = preload("res://Assets/Audio/footstep1.ogg")
+@onready var FOOTSTEP_AUDIO2 = preload("res://Assets/Audio/footstep2.ogg")
+@onready var flashlight_audio : AudioStreamMP3 = preload("res://Assets/Audio/flashlight.mp3")
 var _speed : float
 var _mouse_input : bool = false
 var _mouse_rotation : Vector3
@@ -37,6 +40,7 @@ var _camera_rotation : Vector3
 var _current_rotation : float
 var _momentum: Vector3 = Vector3.ZERO
 var can_use_stamina: bool = true
+var footstep_landed
 
 var wall_normal
 

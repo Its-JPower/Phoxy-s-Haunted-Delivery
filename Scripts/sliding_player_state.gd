@@ -4,9 +4,11 @@ class_name SlidingPlayerState extends PlayerMovementState
 @export var ACCELERATION: float = 0.1
 @export var DECELERATION: float = 0.25
 @export var TILT_AMOUNT: float = 0.09
+@export var AUDIO_PLAYER: AudioStreamPlayer3D
 @export_range(1,6,0.1) var SLIDE_ANIM_SPEED : float = 4.0
 
 @onready var CROUCH_SHAPECAST : ShapeCast3D = %ShapeCast3D
+@onready var SLIDING_AUDIO = preload("res://Assets/Audio/sliding.ogg")
 
 var speed_index
 var rotation_index
@@ -24,6 +26,8 @@ func enter(previous_state) -> void:
 	ANIMATION.get_animation("Sliding").track_set_key_value(speed_index,0,PLAYER.velocity.length())
 	ANIMATION.speed_scale = 1.0
 	ANIMATION.play("Sliding", -1.0, SLIDE_ANIM_SPEED)
+	AUDIO_PLAYER.stream = SLIDING_AUDIO
+	AUDIO_PLAYER.play(0.0)
 
 func update(delta):
 	PLAYER.update_gravity(delta)
