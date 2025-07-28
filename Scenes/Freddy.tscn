@@ -5,7 +5,7 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]
 
-[node name="WA_FNAF" type="CharacterBody3D"]
+[node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
 script = ExtResource("1_mn02b")
 
 [node name="Freddy" parent="." instance=ExtResource("1_w06hg")]

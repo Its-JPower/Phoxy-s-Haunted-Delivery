@@ -8,3 +8,6 @@ extends Node3D
 func _ready() -> void:
 	AUDIO_PLAYER.stream = LEVEL_START_AUDIO
 	AUDIO_PLAYER.play(0.0)
+
+func _physics_process(delta: float) -> void:
+	get_tree().call_group("enemies", "update_target_location", get_tree().get_first_node_in_group("Player").global_transform.origin)
