@@ -25,7 +25,7 @@ class_name Player extends CharacterBody3D
 @export var FLASHLIGHT : SpotLight3D
 @export var AUDIOSTREAM : AudioStreamPlayer
 @export var FOOTSTEP_AUDIO_PLAYER : AudioStreamPlayer3D
-
+@export var ENEMY_RAYCAST : RayCast3D
 
 @onready var FOOTSTEP_AUDIO1 = preload("res://Assets/Audio/footstep1.ogg")
 @onready var FOOTSTEP_AUDIO2 = preload("res://Assets/Audio/footstep2.ogg")
@@ -83,6 +83,7 @@ func _physics_process(delta: float) -> void:
 	Global.debug.add_property("MouseRotation", _mouse_rotation, 2)
 	Global.debug.add_property("Velocity", "%.2f" % velocity.length(), 3)	
 	
+	
 	_update_camera(delta)
 	
 	if not is_on_floor():
@@ -94,6 +95,11 @@ func _physics_process(delta: float) -> void:
 			FLASHLIGHT.light_energy = 0.0
 		else:
 			FLASHLIGHT.light_energy = 1.0
+	if ENEMY_RAYCAST.is_colliding():
+		if ENEMY_RAYCAST.get_collider().is_in_group("Enemies"):
+			Global.freeze = true
+	elif Global.freeze == true:
+		Global.freeze = false
 
 func update_gravity(delta) -> void:
 	velocity.y += GRAVITY * delta

@@ -9,6 +9,7 @@
 script = ExtResource("1_mn02b")
 
 [node name="Freddy" parent="." instance=ExtResource("1_w06hg")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 
 [node name="FreddyCollisions" type="CollisionShape3D" parent="."]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0)
