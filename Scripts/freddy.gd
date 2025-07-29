@@ -8,10 +8,13 @@ extends CharacterBody3D
 func _physics_process(delta: float) -> void:
 	var current_location = global_transform.origin
 	var next_location = nav_agent.get_next_path_position()
-	var new_velocity = (next_location - current_location.normalized() * SPEED)
-	
-	velocity = new_velocity
+	var direction = (next_location - current_location).normalized()
+	velocity = direction * SPEED
 	move_and_slide()
 
+var last_target_position = Vector3.ZERO
+
 func update_target_location(target_location):
-	nav_agent.set_target_position(target_location)
+	if last_target_position.distance_to(target_location) > 0.5:
+		nav_agent.set_target_position(target_location)
+		last_target_position = target_location
