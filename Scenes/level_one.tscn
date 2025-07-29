@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://bs4rahhnlili0"]
 
-[ext_resource type="Script" uid="uid://bt3gjbfimvxlc" path="res://Scenes/level_one.gd" id="1_hi7j2"]
+[ext_resource type="Script" uid="uid://bt3gjbfimvxlc" path="res://Scripts/level_one.gd" id="1_hi7j2"]
 [ext_resource type="PackedScene" uid="uid://u3k6kqv5qe3t" path="res://Scenes/newplayer.tscn" id="1_sojq8"]
 [ext_resource type="PackedScene" uid="uid://di0yabw5w8rmk" path="res://Scenes/maze.tscn" id="2_hi7j2"]
 [ext_resource type="PackedScene" uid="uid://dsv7sw3idon4b" path="res://Scenes/Freddy.tscn" id="4_ik1yt"]
@@ -118,6 +118,29 @@ environment = SubResource("Environment_b7vm3")
 
 [node name="NewPlayerCharacter" parent="." groups=["Player"] instance=ExtResource("1_sojq8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.3294, 2.91099, 96.9341)
+
+[node name="Skeleton3D" parent="NewPlayerCharacter/CollisionShape3D/NewFoxy/Foxy Armature" index="0"]
+bones/0/position = Vector3(0, 8.52441, 0)
+bones/0/rotation = Quaternion(-2.98023e-08, 0, 0, 1)
+bones/1/rotation = Quaternion(-0.0712748, 0, 0, 0.997457)
+bones/2/rotation = Quaternion(0.0375937, 0, 0, 0.999293)
+bones/6/rotation = Quaternion(0.592822, 0.49749, 0.598987, -0.205621)
+bones/14/rotation = Quaternion(0.066187, 0.0177718, -0.00127224, 0.997648)
+bones/15/rotation = Quaternion(0.0215778, 0.706235, 0.0148171, 0.707493)
+bones/16/rotation = Quaternion(-0.0143233, 0.00462062, -0.0477911, 0.998744)
+bones/18/rotation = Quaternion(0.066187, -0.0177718, 0.00127224, 0.997648)
+bones/19/rotation = Quaternion(0.0215778, -0.706235, -0.0148171, 0.707493)
+bones/20/rotation = Quaternion(-0.0143233, -0.00462062, 0.0477911, 0.998744)
+bones/33/rotation = Quaternion(0.707538, -0.0100445, -0.706498, -0.012229)
+bones/34/position = Vector3(-4.42378e-09, 4.21304, -3.03255e-07)
+bones/34/rotation = Quaternion(0.0388361, 0.70396, -0.0526055, 0.707223)
+bones/35/rotation = Quaternion(-0.486779, 0.0566529, 0.0720004, 0.868708)
+bones/36/rotation = Quaternion(-0.0261682, 0.886208, -0.458935, -0.0576998)
+bones/37/rotation = Quaternion(0.707538, 0.0100445, 0.706498, -0.012229)
+bones/38/position = Vector3(4.42378e-09, 4.21304, -3.03255e-07)
+bones/38/rotation = Quaternion(0.0388361, -0.70396, 0.0526055, 0.707223)
+bones/39/rotation = Quaternion(-0.486779, -0.0566529, -0.0720004, 0.868708)
+bones/40/rotation = Quaternion(0.0261682, 0.886208, -0.458935, 0.0576998)
 
 [node name="FadeNode" parent="NewPlayerCharacter/UserInterface" index="3"]
 visible = false

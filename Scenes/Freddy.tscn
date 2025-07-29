@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dsv7sw3idon4b"]
 
-[ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scenes/freddy.gd" id="1_mn02b"]
+[ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]

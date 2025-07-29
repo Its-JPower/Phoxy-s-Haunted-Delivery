@@ -1,7 +1,7 @@
 [gd_scene load_steps=24 format=3 uid="uid://u3k6kqv5qe3t"]
 
 [ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scripts/newplayer.gd" id="1_e21d1"]
-[ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://NewFoxy.glb" id="2_e21d1"]
+[ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://Assets/Foxy/NewFoxy.glb" id="2_e21d1"]
 [ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="3_42d52"]
 [ext_resource type="Script" uid="uid://b0ejrbscki38d" path="res://Scripts/state_machine.gd" id="3_qf216"]
 [ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://Scripts/debug.gd" id="4_kjndv"]
@@ -10,8 +10,8 @@
 [ext_resource type="Script" uid="uid://bkfm6itwc7d1f" path="res://Scripts/sprinting_player_state.gd" id="8_k6h78"]
 [ext_resource type="Script" uid="uid://ciuk7pkckgf6u" path="res://Scripts/crouching_player_state.gd" id="9_7fe1r"]
 [ext_resource type="Script" uid="uid://0ypo4c16not7" path="res://Scripts/sliding_player_state.gd" id="10_tsej5"]
-[ext_resource type="Script" uid="uid://cxu05tygfny0v" path="res://Scenes/jumping_player_state.gd" id="11_8ng7c"]
-[ext_resource type="Script" uid="uid://bktmevd8mhu8h" path="res://Scenes/wall_run_player_state.gd" id="12_poal2"]
+[ext_resource type="Script" uid="uid://cxu05tygfny0v" path="res://Scripts/jumping_player_state.gd" id="11_8ng7c"]
+[ext_resource type="Script" uid="uid://bktmevd8mhu8h" path="res://Scripts/wall_run_player_state.gd" id="12_poal2"]
 [ext_resource type="AudioStream" uid="uid://u3hj580gwnvw" path="res://Assets/Audio/footstep1.ogg" id="13_rga4r"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_e21d1"]
