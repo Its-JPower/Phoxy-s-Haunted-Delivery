@@ -353,6 +353,7 @@ _data = {
 [sub_resource type="SphereShape3D" id="SphereShape3D_e21d1"]
 
 [node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "ENEMY_RAYCAST")]
+collision_mask = 3
 script = ExtResource("1_e21d1")
 TILT_UPPER_LIMIT = 1.571
 CAMERA_CONTROLLER = NodePath("CameraController/Camera3D")
@@ -545,7 +546,11 @@ stream = ExtResource("13_rga4r")
 autoplay = true
 
 [node name="RayCast3D" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -2.18557e-06, -1, 0, 50, -4.37114e-08, 0, 0.817, -0.5)
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.817, -0.5)
+target_position = Vector3(0, -50, 0)
+collision_mask = 3
+collide_with_areas = true
+debug_shape_thickness = 5
 
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_animation_player_animation_started"]
 

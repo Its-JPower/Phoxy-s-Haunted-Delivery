@@ -85,6 +85,7 @@ func _physics_process(delta: float) -> void:
 	
 	
 	_update_camera(delta)
+	detect_enemy()
 	
 	if not is_on_floor():
 		_momentum = _momentum.move_toward(Vector3.ZERO, DECELERATION * 0.5)
@@ -143,3 +144,11 @@ func regen_stamina(_delta):
 
 func update_velocity() -> void:
 	move_and_slide()
+
+func detect_enemy():
+	if ENEMY_RAYCAST.is_colliding():
+		var collider = ENEMY_RAYCAST.get_collider()
+		if collider is CharacterBody3D and collider.is_in_group("Enemies"):
+			collider.freeze = true
+		elif collider is Area3D and collider.get_parent().is_in_group("Enemies"):
+			collider.get_parent().freeze = true

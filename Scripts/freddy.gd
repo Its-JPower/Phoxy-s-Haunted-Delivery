@@ -5,27 +5,26 @@ extends CharacterBody3D
 
 @export var SPEED = 10
 
+var freeze : bool = false
+
 func _physics_process(delta: float) -> void:
+	if freeze:
+		velocity = Vector3.ZERO
+		move_and_slide()
+		freeze = false
+		return
 	var current_location = global_transform.origin
 	var next_location = nav_agent.get_next_path_position()
 	var direction = (next_location - current_location).normalized()
-	if Global.freeze == true:
-		velocity = Vector3.ZERO
-	else:
-		var target_rotation = Vector3.ZERO
-		target_rotation.x = TARGET.global_position.x
-		target_rotation.y = global_position.y
-		target_rotation.z = TARGET.global_position.z
-		look_at(target_rotation)
-		velocity = direction * SPEED
-		move_and_slide()
+	var target_position = Vector3(
+		TARGET.global_position.x,
+		global_position.y,
+		TARGET.global_position.z
+	)
+	look_at(target_position)
+
+	velocity = direction * SPEED
+	move_and_slide()
 
 func update_target_location(target_location):
 	nav_agent.set_target_position(target_location)
-
-
-func _on_visible_on_screen() -> void:
-	Global.freeze == true
-
-func _on_not_visible_on_screen() -> void:
-	Global.freeze == false

@@ -29,6 +29,10 @@ Global="*res://Scripts/global.gd"
 window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
 
+[global_group]
+
+Enemies=""
+
 [gui]
 
 theme/custom="uid://dbtrx42b3xo3"
