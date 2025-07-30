@@ -4,12 +4,12 @@ importer="scene"
 importer_version=1
 type="PackedScene"
 uid="uid://cyfkv4wx5bdfw"
-path="res://.godot/imported/NewFoxy.glb-4f4bf662979aae480e84f6949db97a14.scn"
+path="res://.godot/imported/NewFoxy.glb-fc5348cbf793d91651806e582a8380d1.scn"
 
 [deps]
 
-source_file="res://NewFoxy.glb"
-dest_files=["res://.godot/imported/NewFoxy.glb-4f4bf662979aae480e84f6949db97a14.scn"]
+source_file="res://Assets/Foxy/NewFoxy.glb"
+dest_files=["res://.godot/imported/NewFoxy.glb-fc5348cbf793d91651806e582a8380d1.scn"]
 
 [params]
 

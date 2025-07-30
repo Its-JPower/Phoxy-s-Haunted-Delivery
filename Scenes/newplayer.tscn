@@ -1,7 +1,7 @@
-[gd_scene load_steps=23 format=3 uid="uid://u3k6kqv5qe3t"]
+[gd_scene load_steps=24 format=3 uid="uid://u3k6kqv5qe3t"]
 
 [ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scripts/newplayer.gd" id="1_e21d1"]
-[ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://NewFoxy.glb" id="2_e21d1"]
+[ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://Assets/Foxy/NewFoxy.glb" id="2_e21d1"]
 [ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="3_42d52"]
 [ext_resource type="Script" uid="uid://b0ejrbscki38d" path="res://Scripts/state_machine.gd" id="3_qf216"]
 [ext_resource type="Script" uid="uid://btcxlapjm7j5x" path="res://Scripts/debug.gd" id="4_kjndv"]
@@ -10,8 +10,9 @@
 [ext_resource type="Script" uid="uid://bkfm6itwc7d1f" path="res://Scripts/sprinting_player_state.gd" id="8_k6h78"]
 [ext_resource type="Script" uid="uid://ciuk7pkckgf6u" path="res://Scripts/crouching_player_state.gd" id="9_7fe1r"]
 [ext_resource type="Script" uid="uid://0ypo4c16not7" path="res://Scripts/sliding_player_state.gd" id="10_tsej5"]
-[ext_resource type="Script" uid="uid://cxu05tygfny0v" path="res://Scenes/jumping_player_state.gd" id="11_8ng7c"]
-[ext_resource type="Script" uid="uid://bktmevd8mhu8h" path="res://Scenes/wall_run_player_state.gd" id="12_poal2"]
+[ext_resource type="Script" uid="uid://cxu05tygfny0v" path="res://Scripts/jumping_player_state.gd" id="11_8ng7c"]
+[ext_resource type="Script" uid="uid://bktmevd8mhu8h" path="res://Scripts/wall_run_player_state.gd" id="12_poal2"]
+[ext_resource type="AudioStream" uid="uid://u3hj580gwnvw" path="res://Assets/Audio/footstep1.ogg" id="13_rga4r"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_e21d1"]
 
@@ -351,15 +352,19 @@ _data = {
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_e21d1"]
 
-[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "FLASHLIGHT", "AUDIOSTREAM")]
+[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "ENEMY_RAYCAST")]
+collision_mask = 3
 script = ExtResource("1_e21d1")
 TILT_UPPER_LIMIT = 1.571
 CAMERA_CONTROLLER = NodePath("CameraController/Camera3D")
 ANIMATION_PLAYER = NodePath("AnimationPlayer")
 FOXY_ANIMATION_PLAYER = NodePath("CollisionShape3D/NewFoxy/AnimationPlayer")
 CROUCH_SHAPECAST = NodePath("ShapeCast3D")
+STAMINABAR = NodePath("UserInterface/StaminaBar")
 FLASHLIGHT = NodePath("CameraController/Camera3D/Flashlight")
 AUDIOSTREAM = NodePath("AudioStreamPlayer")
+FOOTSTEP_AUDIO_PLAYER = NodePath("FootstepPlayer3D")
+ENEMY_RAYCAST = NodePath("RayCast3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_e21d1")
@@ -420,9 +425,12 @@ target_position = Vector3(0, 0.5, 0)
 
 [node name="UserInterface" type="Control" parent="."]
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Reticle" type="CenterContainer" parent="UserInterface"]
 layout_mode = 0
@@ -446,6 +454,60 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
+[node name="StaminaBar" type="ProgressBar" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -27.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+value = 100.0
+
+[node name="FadeNode" type="ColorRect" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="LevelLabel" type="Label" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 100
+text = "LEVEL ONE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LevelSubText" type="Label" parent="UserInterface"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 65
+text = "
+
+
+Easy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="PlayerStateMachine" type="Node" parent="." node_paths=PackedStringArray("CURRENT_STATE")]
 script = ExtResource("3_qf216")
 CURRENT_STATE = NodePath("IdlePlayerState")
@@ -453,18 +515,21 @@ CURRENT_STATE = NodePath("IdlePlayerState")
 [node name="IdlePlayerState" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("4_pcky6")
 
-[node name="WalkingPlayerState" type="Node" parent="PlayerStateMachine"]
+[node name="WalkingPlayerState" type="Node" parent="PlayerStateMachine" node_paths=PackedStringArray("FOOTSTEP_AUDIO_PLAYER")]
 script = ExtResource("5_rbx2y")
+FOOTSTEP_AUDIO_PLAYER = NodePath("../../FootstepPlayer3D")
 
-[node name="SprintingPlayerState" type="Node" parent="PlayerStateMachine"]
+[node name="SprintingPlayerState" type="Node" parent="PlayerStateMachine" node_paths=PackedStringArray("FOOTSTEP_AUDIO_PLAYER")]
 unique_name_in_owner = true
 script = ExtResource("8_k6h78")
+FOOTSTEP_AUDIO_PLAYER = NodePath("../../FootstepPlayer3D")
 
 [node name="CrouchingPlayerState" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("9_7fe1r")
 
-[node name="SlidingPlayerState" type="Node" parent="PlayerStateMachine"]
+[node name="SlidingPlayerState" type="Node" parent="PlayerStateMachine" node_paths=PackedStringArray("AUDIO_PLAYER")]
 script = ExtResource("10_tsej5")
+AUDIO_PLAYER = NodePath("../../AudioStreamPlayer3D")
 
 [node name="JumpingPlayerState" type="Node" parent="PlayerStateMachine"]
 script = ExtResource("11_8ng7c")
@@ -473,6 +538,19 @@ script = ExtResource("11_8ng7c")
 script = ExtResource("12_poal2")
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+
+[node name="FootstepPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("13_rga4r")
+autoplay = true
+
+[node name="RayCast3D" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.817, -0.5)
+target_position = Vector3(0, -50, 0)
+collision_mask = 3
+collide_with_areas = true
+debug_shape_thickness = 5
 
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_animation_player_animation_started"]
 

@@ -11,9 +11,14 @@ config_version=5
 [application]
 
 config/name="Phoxy's Haunted Delivery"
+config/version="0.48"
 run/main_scene="uid://d3asbswv43kqu"
 config/features=PackedStringArray("4.4", "Forward Plus")
-config/icon="res://icon.svg"
+boot_splash/show_image=false
+boot_splash/fullsize=false
+boot_splash/image="uid://katijxpd8qwp"
+config/icon="uid://c7o4favy2dto3"
+boot_splash/minimum_display_time=5000
 
 [autoload]
 
@@ -23,6 +28,10 @@ Global="*res://Scripts/global.gd"
 
 window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
+
+[global_group]
+
+Enemies=""
 
 [gui]
 

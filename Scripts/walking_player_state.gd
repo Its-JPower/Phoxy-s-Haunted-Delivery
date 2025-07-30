@@ -6,6 +6,11 @@ extends PlayerMovementState
 @export var ACCELERATION: float = 0.1
 @export var DECELERATION: float = 0.25
 @export var TOP_ANIMATION_SPEED : float = 2.2
+@export var FOOTSTEP_AUDIO_PLAYER: AudioStreamPlayer3D
+
+
+var footstep_can_play := true
+var footstep_landed
 
 func enter(previous_state) -> void:
 	if ANIMATION.is_playing() and ANIMATION.current_animation == "JumpEnd":

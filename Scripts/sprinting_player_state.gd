@@ -6,6 +6,11 @@ extends PlayerMovementState
 @export var ACCELERATION: float = 0.1
 @export var DECELERATION: float = 0.25
 @export var TOP_ANIMATION_SPEED : float = 3
+@export var FOOTSTEP_AUDIO_PLAYER: AudioStreamPlayer3D
+
+
+@onready var FOOTSTEP_AUDIO1 = preload("res://Assets/Audio/footstep1.ogg")
+@onready var FOOTSTEP_AUDIO2 = preload("res://Assets/Audio/footstep2.ogg")
 
 func enter(previous_state) -> void:
 	if ANIMATION.is_playing() and ANIMATION.current_animation == "JumpEnd":
@@ -15,9 +20,19 @@ func enter(previous_state) -> void:
 		ANIMATION.play("Walking",.5,1.0)
 
 func update(delta):
+	PLAYER.handle_stamina(delta)
 	PLAYER.update_gravity(delta)
 	PLAYER.update_input(SPEED, ACCELERATION, DECELERATION)
 	PLAYER.update_velocity()
+	
+	#
+	#if FOOTSTEP_AUDIO_PLAYER.playing == false:
+		#FOOTSTEP_AUDIO_PLAYER.play(0.0)
+	#await FOOTSTEP_AUDIO_PLAYER.finished
+	#if FOOTSTEP_AUDIO_PLAYER.stream == FOOTSTEP_AUDIO1:
+		#FOOTSTEP_AUDIO_PLAYER.stream = FOOTSTEP_AUDIO2
+	#else:
+		#FOOTSTEP_AUDIO_PLAYER.stream = FOOTSTEP_AUDIO1
 	
 	set_animation_speed(PLAYER._momentum.length())
 	if Global.player.velocity.length() == 0.0 and Global.player.is_on_floor():

@@ -1,7 +1,31 @@
-[gd_scene load_steps=2 format=3 uid="uid://dsv7sw3idon4b"]
+[gd_scene load_steps=5 format=3 uid="uid://dsv7sw3idon4b"]
 
+[ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
 
-[node name="Node3D" type="Node3D"]
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_mn02b"]
+size = Vector3(7.97015, 5.03149, 1)
+
+[node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
+script = ExtResource("1_mn02b")
 
 [node name="Freddy" parent="." instance=ExtResource("1_w06hg")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="FreddyCollisions" type="CollisionShape3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0)
+shape = SubResource("CapsuleShape3D_w06hg")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+
+[node name="Area3D" type="Area3D" parent="." groups=["Enemies"]]
+collision_layer = 2
+collision_mask = 2
+
+[node name="raycastDETECT" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00863647, 2.53685, 0)
+shape = SubResource("BoxShape3D_mn02b")
+
+[editable path="Freddy"]
