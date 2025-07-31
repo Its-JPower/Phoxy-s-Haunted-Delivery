@@ -26,6 +26,7 @@ class_name Player extends CharacterBody3D
 @export var AUDIOSTREAM : AudioStreamPlayer
 @export var FOOTSTEP_AUDIO_PLAYER : AudioStreamPlayer3D
 @export var ENEMY_RAYCAST : RayCast3D
+@export var BOX_ANIMATION_PLAYER : AnimationPlayer
 
 @onready var FOOTSTEP_AUDIO1 = preload("res://Assets/Audio/footstep1.ogg")
 @onready var FOOTSTEP_AUDIO2 = preload("res://Assets/Audio/footstep2.ogg")
@@ -41,6 +42,7 @@ var _current_rotation : float
 var _momentum: Vector3 = Vector3.ZERO
 var can_use_stamina: bool = true
 var footstep_landed
+var equipped := false
 
 var wall_normal
 
@@ -96,6 +98,22 @@ func _physics_process(delta: float) -> void:
 			FLASHLIGHT.light_energy = 0.0
 		else:
 			FLASHLIGHT.light_energy = 1.0
+	if Input.is_action_just_pressed("equip_box"):
+		if BOX_ANIMATION_PLAYER.is_playing():
+			await BOX_ANIMATION_PLAYER.animation_finished
+			if equipped:
+				BOX_ANIMATION_PLAYER.play("box_equip",-1,-1.0)
+				equipped = false
+			else:
+				equipped = true
+				BOX_ANIMATION_PLAYER.play("box_equip",0.25,1.0)
+		else:
+			if equipped:
+				BOX_ANIMATION_PLAYER.play("box_equip",0.25,-1.0)
+				equipped = false
+			else:
+				equipped = true
+				BOX_ANIMATION_PLAYER.play("box_equip",0.25,1.0)
 	if ENEMY_RAYCAST.is_colliding():
 		if ENEMY_RAYCAST.get_collider().is_in_group("Enemies"):
 			Global.freeze = true
