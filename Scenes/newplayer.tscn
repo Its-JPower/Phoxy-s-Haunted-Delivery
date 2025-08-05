@@ -353,42 +353,6 @@ _data = {
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_e21d1"]
 
-[sub_resource type="Animation" id="Animation_de14b"]
-resource_name = "box_equip"
-tracks/0/type = "bezier"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("..:rotation:x")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"handle_modes": PackedInt32Array(0, 0),
-"points": PackedFloat32Array(-0.0857879, -0.25, 0, 0.25, 0, -3.9968, -0.25, 0, 0.25, 0),
-"times": PackedFloat32Array(0, 1)
-}
-tracks/1/type = "bezier"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath("..:rotation:y")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
-"handle_modes": PackedInt32Array(0, 0),
-"points": PackedFloat32Array(-0.226098, -0.25, 0, 0.25, 0, -0.226893, -0.25, 0, 0.25, 0),
-"times": PackedFloat32Array(0, 1)
-}
-tracks/2/type = "bezier"
-tracks/2/imported = false
-tracks/2/enabled = true
-tracks/2/path = NodePath("..:rotation:z")
-tracks/2/interp = 1
-tracks/2/loop_wrap = true
-tracks/2/keys = {
-"handle_modes": PackedInt32Array(0, 0),
-"points": PackedFloat32Array(0.0197072, -0.25, 0, 0.25, 0, 0.0191986, -0.25, 0, 0.25, 0),
-"times": PackedFloat32Array(0, 1)
-}
-
 [sub_resource type="Animation" id="Animation_y2wd4"]
 length = 0.001
 tracks/0/type = "bezier"
@@ -489,6 +453,42 @@ tracks/8/keys = {
 "handle_modes": PackedInt32Array(0),
 "points": PackedFloat32Array(0.0197071, -0.25, 0, 0.25, 0),
 "times": PackedFloat32Array(0)
+}
+
+[sub_resource type="Animation" id="Animation_de14b"]
+resource_name = "box_equip"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:rotation:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-0.0857879, -0.25, 0, 0.25, 0, -3.9968, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("..:rotation:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-0.226098, -0.25, 0, 0.25, 0, -0.226893, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("..:rotation:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.0197072, -0.25, 0, 0.25, 0, 0.0191986, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_geyfd"]
@@ -699,10 +699,10 @@ collide_with_areas = true
 debug_shape_thickness = 5
 
 [node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(0.974738, 1.86265e-09, -0.223352, 0.0196334, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
+transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
 
 [node name="Box" parent="Node3D" instance=ExtResource("14_de14b")]
-transform = Transform3D(0.974739, 2.23517e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
+transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Node3D/Box"]
 libraries = {

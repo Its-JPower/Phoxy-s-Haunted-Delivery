@@ -167,6 +167,10 @@ func detect_enemy():
 	if ENEMY_RAYCAST.is_colliding():
 		var collider = ENEMY_RAYCAST.get_collider()
 		if collider is CharacterBody3D and collider.is_in_group("Enemies"):
-			collider.freeze = true
+			Global.freeze = true
 		elif collider is Area3D and collider.get_parent().is_in_group("Enemies"):
-			collider.get_parent().freeze = true
+			Global.freeze = true
+		else:
+			Global.freeze = false
+	else:
+		Global.freeze = false

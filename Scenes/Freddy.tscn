@@ -1,18 +1,33 @@
-[gd_scene load_steps=5 format=3 uid="uid://dsv7sw3idon4b"]
+[gd_scene load_steps=8 format=3 uid="uid://dsv7sw3idon4b"]
 
 [ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
+[ext_resource type="Texture2D" uid="uid://d2pibnu5bfqik" path="res://Assets/Enemies/Freddy_Freddy Fazbear Texture.png" id="3_x4qok"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hps1a"]
+albedo_texture = ExtResource("3_x4qok")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sm87w"]
+albedo_texture = ExtResource("3_x4qok")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mn02b"]
-size = Vector3(7.97015, 5.03149, 1)
+size = Vector3(28.7508, 8.34076, 1)
 
 [node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
 script = ExtResource("1_mn02b")
 
 [node name="Freddy" parent="." instance=ExtResource("1_w06hg")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="Freddy Fazbear" parent="Freddy/Freddy Fazbear Armature/Skeleton3D" index="0"]
+gi_mode = 0
+gi_lightmap_texel_scale = 0.01
+surface_material_override/0 = SubResource("StandardMaterial3D_hps1a")
+
+[node name="Microphone" parent="Freddy/Freddy Fazbear Armature/Skeleton3D" index="1"]
+surface_material_override/0 = SubResource("StandardMaterial3D_sm87w")
 
 [node name="FreddyCollisions" type="CollisionShape3D" parent="."]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 1.5, 0)
@@ -25,7 +40,7 @@ collision_layer = 2
 collision_mask = 2
 
 [node name="raycastDETECT" type="CollisionShape3D" parent="Area3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.00863647, 2.53685, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00954866, 2.32881, 0)
 shape = SubResource("BoxShape3D_mn02b")
 
 [editable path="Freddy"]
