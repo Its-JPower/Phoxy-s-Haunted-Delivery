@@ -1,8 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://dsv7sw3idon4b"]
+[gd_scene load_steps=9 format=3 uid="uid://dsv7sw3idon4b"]
 
 [ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
 [ext_resource type="Texture2D" uid="uid://d2pibnu5bfqik" path="res://Assets/Enemies/Freddy_Freddy Fazbear Texture.png" id="3_x4qok"]
+[ext_resource type="AudioStream" uid="uid://cy6qft0gi2ula" path="res://Assets/Audio/animatronic_walk.mp3" id="4_hps1a"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hps1a"]
 albedo_texture = ExtResource("3_x4qok")
@@ -42,5 +43,13 @@ collision_mask = 2
 [node name="raycastDETECT" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00954866, 2.32881, 0)
 shape = SubResource("BoxShape3D_mn02b")
+
+[node name="FootstepTimer" type="Timer" parent="."]
+wait_time = 0.2
+one_shot = true
+autostart = true
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("4_hps1a")
 
 [editable path="Freddy"]

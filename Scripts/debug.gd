@@ -3,12 +3,13 @@ extends PanelContainer
 @onready var property_container = %VBoxContainer
 var fps_label : Label
 var speed_label : Label
-
+var timer_label : Label
 
 func _ready():
 	Global.debug = self
 	add_property("FPS", "0.00", 0)
 	add_property("Speed", "0.00", 1)
+	add_property("Time", "0.00", 4)
 	visible = false
 
 
@@ -20,6 +21,8 @@ func _process(delta: float) -> void:
 
 		if speed_label:
 			speed_label.text = "Speed: " + str(Global.player._speed)
+		if timer_label:
+			timer_label.text = "Time: " + str(snapped(Global.timer,0.01))
 
 
 func _input(event):
@@ -42,6 +45,8 @@ func add_property(title: String, value, order):
 		fps_label = label
 	elif title == "Speed":
 		speed_label = label
+	elif title == "Time":
+		timer_label = label
 
 
 

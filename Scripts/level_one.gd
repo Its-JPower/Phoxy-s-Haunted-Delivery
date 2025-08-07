@@ -2,6 +2,7 @@ extends Node3D
 
 @export var ANIM_PLAYER : AnimationPlayer
 @export var AUDIO_PLAYER : AudioStreamPlayer
+@onready var timer: Timer = $Timer
 
 @onready var LEVEL_START_AUDIO = preload("res://Assets/Audio/level_start.mp3")
 
@@ -11,3 +12,6 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	get_tree().call_group("enemies", "update_target_location", get_tree().get_first_node_in_group("Player").global_transform.origin)
+
+func _on_timer_timeout() -> void:
+	Global.timer += 0.01

@@ -83,8 +83,7 @@ func _ready():
 func _physics_process(delta: float) -> void:
 	
 	Global.debug.add_property("MouseRotation", _mouse_rotation, 2)
-	Global.debug.add_property("Velocity", "%.2f" % velocity.length(), 3)	
-	
+	Global.debug.add_property("Velocity", "%.2f" % velocity.length(), 3)
 	
 	_update_camera(delta)
 	detect_enemy()
@@ -174,3 +173,9 @@ func detect_enemy():
 			Global.freeze = false
 	else:
 		Global.freeze = false
+
+func initiate_jumpscare(enemy):
+	enemy.ANIM_PLAYER.play()
+	await enemy.ANIM_PLAYER.finished
+	Global.deaths += 1
+	get_tree().reload_current_scene()

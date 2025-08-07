@@ -3,14 +3,22 @@ extends CharacterBody3D
 @onready var nav_agent = $NavigationAgent3D
 @onready var TARGET : CharacterBody3D = get_tree().get_first_node_in_group("Player")
 
-@export var SPEED = 10
+@export var SPEED = 8
+@onready var FOOTSTEP_TIMER: Timer = $FootstepTimer
+@onready var AUDIO_PLAYER: AudioStreamPlayer3D = $AudioStreamPlayer3D
 
 
 func _physics_process(delta: float) -> void:
 	if Global.freeze:
 		velocity = Vector3.ZERO
 		move_and_slide()
+
+		AUDIO_PLAYER.stream_paused = true
+		FOOTSTEP_TIMER.paused = true
 		return
+	else:
+		AUDIO_PLAYER.stream_paused = false
+		FOOTSTEP_TIMER.paused = false
 
 	var current_location = global_transform.origin
 	var next_location = nav_agent.get_next_path_position()
@@ -26,6 +34,13 @@ func _physics_process(delta: float) -> void:
 
 	velocity = direction * SPEED
 	move_and_slide()
+
+	if velocity.length() > 0:
+		if FOOTSTEP_TIMER.time_left <= 0:
+			AUDIO_PLAYER.pitch_scale = randf_range(0.8, 1.2)
+			AUDIO_PLAYER.play()
+			FOOTSTEP_TIMER.start(0.85)
+
 
 
 func update_target_location(target_location):
