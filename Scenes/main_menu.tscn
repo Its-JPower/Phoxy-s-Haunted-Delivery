@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://c5qk5flxkt7fu" path="res://Scenes/foxy.tscn" id="2_1ehe0"]
 [ext_resource type="Texture2D" uid="uid://cworn5l5sp6ek" path="res://Assets/Other/white_circle.png" id="3_ce3w2"]
 [ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_ce3w2"]
-[ext_resource type="Theme" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
+[ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="5_n45e2"]
 [ext_resource type="AudioStream" uid="uid://8r2ixye2qqwv" path="res://Assets/Audio/main_menu_music.mp3" id="6_opfnp"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
@@ -48,23 +48,6 @@ tracks/1/keys = {
 "values": [Vector2(1, 1)]
 }
 
-[sub_resource type="Animation" id="Animation_1ehe0"]
-resource_name = "flickering"
-length = 2.5
-loop_mode = 1
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:light_energy")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0.2, 0.208333, 0.216667, 0.358333, 0.366667, 0.375, 0.458333, 0.466667, 0.533333, 0.566667, 0.575, 0.633333, 0.666667, 0.758829, 0.767162, 0.775496, 1.15725, 1.16558, 1.17391, 1.83639, 1.84472, 1.85306),
-"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-"update": 0,
-"values": [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
-}
-
 [sub_resource type="Animation" id="Animation_opfnp"]
 resource_name = "ad"
 length = 2.0
@@ -80,6 +63,23 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
 "values": [Vector2(1, 1), Vector2(1.125, 1.125), Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_1ehe0"]
+resource_name = "flickering"
+length = 2.5
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:light_energy")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.2, 0.208333, 0.216667, 0.358333, 0.366667, 0.375, 0.458333, 0.466667, 0.533333, 0.566667, 0.575, 0.633333, 0.666667, 0.758829, 0.767162, 0.775496, 1.15725, 1.16558, 1.17391, 1.83639, 1.84472, 1.85306),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_n45e2"]
