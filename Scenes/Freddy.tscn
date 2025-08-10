@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dsv7sw3idon4b"]
+[gd_scene load_steps=10 format=3 uid="uid://dsv7sw3idon4b"]
 
 [ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://buruwkch7jh3" path="res://Assets/Enemies/Freddy.glb" id="1_w06hg"]
@@ -15,6 +15,9 @@ albedo_texture = ExtResource("3_x4qok")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mn02b"]
 size = Vector3(28.7508, 8.34076, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hps1a"]
+size = Vector3(1, 2.86914, 1.23456)
 
 [node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
 script = ExtResource("1_mn02b")
@@ -51,5 +54,13 @@ autostart = true
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("4_hps1a")
+
+[node name="PlayerDetection" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetection"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58962, -0.000213623)
+shape = SubResource("BoxShape3D_hps1a")
+
+[connection signal="area_entered" from="PlayerDetection" to="." method="_on_player_detection_area_entered"]
 
 [editable path="Freddy"]

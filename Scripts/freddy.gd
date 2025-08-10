@@ -45,3 +45,7 @@ func _physics_process(delta: float) -> void:
 
 func update_target_location(target_location):
 	nav_agent.set_target_position(target_location)
+
+func _on_player_detection_area_entered(area: Area3D) -> void:
+	if area.is_in_group("Player"):
+		area.initiate_jumpscare(self)
