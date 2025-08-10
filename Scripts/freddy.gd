@@ -6,10 +6,12 @@ extends CharacterBody3D
 @export var SPEED = 8
 @onready var FOOTSTEP_TIMER: Timer = $FootstepTimer
 @onready var AUDIO_PLAYER: AudioStreamPlayer3D = $AudioStreamPlayer3D
+@onready var ANIM_PLAYER: AnimationPlayer = $Freddy/AnimationPlayer
 
 
 func _physics_process(delta: float) -> void:
 	if Global.freeze:
+		ANIM_PLAYER.pause()
 		velocity = Vector3.ZERO
 		move_and_slide()
 
@@ -17,6 +19,7 @@ func _physics_process(delta: float) -> void:
 		FOOTSTEP_TIMER.paused = true
 		return
 	else:
+		ANIM_PLAYER.play()
 		AUDIO_PLAYER.stream_paused = false
 		FOOTSTEP_TIMER.paused = false
 

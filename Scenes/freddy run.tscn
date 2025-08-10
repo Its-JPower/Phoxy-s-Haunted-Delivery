@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dkgqxr2kyu4j1"]
 
-[ext_resource type="PackedScene" uid="uid://dtf5ehw4nn00j" path="res://Assets/Anmtion/freddy run.glb" id="1_mltan"]
+[ext_resource type="PackedScene" uid="uid://ccqc7mn4644ta" path="res://Assets/Anmtion/Freddy/freddy run.glb" id="1_mltan"]
 
 [node name="Node3D" type="Node3D"]
 
