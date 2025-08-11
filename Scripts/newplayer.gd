@@ -101,14 +101,14 @@ func _physics_process(delta: float) -> void:
 		if BOX_ANIMATION_PLAYER.is_playing():
 			await BOX_ANIMATION_PLAYER.animation_finished
 			if equipped:
-				BOX_ANIMATION_PLAYER.play("box_equip",-1,-1.0)
+				BOX_ANIMATION_PLAYER.play("box_unequip",.25,1.0)
 				equipped = false
 			else:
 				equipped = true
 				BOX_ANIMATION_PLAYER.play("box_equip",0.25,1.0)
 		else:
 			if equipped:
-				BOX_ANIMATION_PLAYER.play("box_equip",0.25,-1.0)
+				BOX_ANIMATION_PLAYER.play("box_unequip",.25,1.0)
 				equipped = false
 			else:
 				equipped = true

@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://u3k6kqv5qe3t"]
+[gd_scene load_steps=29 format=3 uid="uid://u3k6kqv5qe3t"]
 
 [ext_resource type="Script" uid="uid://by7eyl6junb4y" path="res://Scripts/newplayer.gd" id="1_e21d1"]
 [ext_resource type="PackedScene" uid="uid://cyfkv4wx5bdfw" path="res://Assets/Foxy/NewFoxy.glb" id="2_e21d1"]
@@ -491,10 +491,47 @@ tracks/2/keys = {
 "times": PackedFloat32Array(0, 1)
 }
 
+[sub_resource type="Animation" id="Animation_geyfd"]
+resource_name = "box_unequip"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("..:rotation:x")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-3.9968, -0.25, 0, 0.25, 0, -0.0857879, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("..:rotation:y")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(-0.226893, -0.25, 0, 0.25, 0, -0.226098, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("..:rotation:z")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.0191986, -0.25, 0, 0.25, 0, 0.0197072, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_geyfd"]
 _data = {
 &"RESET": SubResource("Animation_y2wd4"),
-&"box_equip": SubResource("Animation_de14b")
+&"box_equip": SubResource("Animation_de14b"),
+&"box_unequip": SubResource("Animation_geyfd")
 }
 
 [node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "ENEMY_RAYCAST", "BOX_ANIMATION_PLAYER") groups=["Player"]]
@@ -699,7 +736,7 @@ collide_with_areas = true
 debug_shape_thickness = 5
 
 [node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879033, 0.970964, 0.00206757, -0.287145, -0.0429299)
+transform = Transform3D(0.974738, -5.58794e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
 
 [node name="Box" parent="Node3D" instance=ExtResource("14_de14b")]
 transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
