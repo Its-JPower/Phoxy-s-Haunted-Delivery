@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dnpfoq0k85ot0"]
+
+[ext_resource type="PackedScene" uid="uid://c7shj086e8i61" path="res://Assets/Anmtion/bonnie/Bonnie bundle.glb" id="1_1psha"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Bonnie bundle" parent="." instance=ExtResource("1_1psha")]
