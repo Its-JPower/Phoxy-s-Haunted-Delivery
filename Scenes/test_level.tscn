@@ -1,0 +1,41 @@
+[gd_scene load_steps=9 format=3 uid="uid://c77helscbjrhf"]
+
+[ext_resource type="Script" uid="uid://cpferq8d1hs6h" path="res://MazeGenerator3D.gd" id="1_eglq2"]
+[ext_resource type="Script" uid="uid://by3qww21fvn" path="res://Scenes/test_level.gd" id="1_rsyfn"]
+[ext_resource type="Texture2D" uid="uid://btg7l1ev1rfpo" path="res://Assets/textures/wall_texture.jpg" id="2_rsyfn"]
+[ext_resource type="Texture2D" uid="uid://c64jl26xvktw1" path="res://Assets/textures/floor.jpg" id="3_7w7ni"]
+[ext_resource type="PackedScene" uid="uid://u3k6kqv5qe3t" path="res://Scenes/newplayer.tscn" id="5_7w7ni"]
+[ext_resource type="PackedScene" uid="uid://dsv7sw3idon4b" path="res://Scenes/Freddy.tscn" id="6_btda1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_btda1"]
+albedo_texture = ExtResource("2_rsyfn")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xq3o0"]
+albedo_texture = ExtResource("3_7w7ni")
+
+[node name="Test level" type="Node3D" node_paths=PackedStringArray("player")]
+script = ExtResource("1_rsyfn")
+player = NodePath("NewPlayerCharacter")
+
+[node name="MazeGenerator3D" type="Node3D" parent="."]
+script = ExtResource("1_eglq2")
+wall_material = SubResource("StandardMaterial3D_btda1")
+floor_material = SubResource("StandardMaterial3D_xq3o0")
+secret_floor_material = SubResource("StandardMaterial3D_xq3o0")
+metadata/_custom_type_script = "uid://cpferq8d1hs6h"
+
+[node name="NewPlayerCharacter" parent="." instance=ExtResource("5_7w7ni")]
+
+[node name="FadeNode" parent="NewPlayerCharacter/UserInterface" index="3"]
+visible = false
+
+[node name="Node3D" parent="NewPlayerCharacter" index="10"]
+transform = Transform3D(0.974738, -5.58794e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
+
+[node name="Box" parent="NewPlayerCharacter/Node3D" index="0"]
+transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
+
+[node name="WA_FNAF" parent="." instance=ExtResource("6_btda1")]
+
+[editable path="NewPlayerCharacter"]
+[editable path="NewPlayerCharacter/CollisionShape3D/NewFoxy"]

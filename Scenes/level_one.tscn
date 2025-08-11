@@ -119,7 +119,7 @@ AUDIO_PLAYER = NodePath("AudioStreamPlayer")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_b7vm3")
 
-[node name="NewPlayerCharacter" parent="." groups=["Player"] instance=ExtResource("1_sojq8")]
+[node name="NewPlayerCharacter" parent="." instance=ExtResource("1_sojq8")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.3294, 2.91099, 96.9341)
 
 [node name="Skeleton3D" parent="NewPlayerCharacter/CollisionShape3D/NewFoxy/Foxy Armature" index="0"]
