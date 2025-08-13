@@ -79,7 +79,7 @@ transform = Transform3D(0.87959, -0.436605, 0.188936, 0, 0.397148, 0.917755, -0.
 light_energy = 2.0
 shadow_enabled = true
 
-[node name="NewPlayerCharacter" parent="." groups=["Player"] instance=ExtResource("4_mq1bj")]
+[node name="NewPlayerCharacter" parent="." instance=ExtResource("4_mq1bj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.83917, 0)
 
 [node name="AnimationPlayer" parent="NewPlayerCharacter" index="2"]
@@ -93,6 +93,12 @@ visible = false
 
 [node name="LevelLabel" parent="NewPlayerCharacter/UserInterface" index="4"]
 visible = false
+
+[node name="Node3D" parent="NewPlayerCharacter" index="10"]
+transform = Transform3D(0.974738, -5.58794e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
+
+[node name="Box" parent="NewPlayerCharacter/Node3D" index="0"]
+transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
 
 [node name="WA_FNAF" parent="." instance=ExtResource("2_iwv7r")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.43719, 0.135464, 1.58679)
