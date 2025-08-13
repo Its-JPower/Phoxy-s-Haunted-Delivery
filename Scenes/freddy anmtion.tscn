@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b40hs1c36wppb"]
+
+[ext_resource type="PackedScene" uid="uid://ccqc7mn4644ta" path="res://Assets/Anmtion/Freddy/freddy run.glb" id="1_6717d"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="freddy run" parent="." instance=ExtResource("1_6717d")]
