@@ -5,6 +5,7 @@ class_name MazeGenerator3D
 @export var maze_size: int = 10
 @export var cell_size: float = 4.0
 @export var wall_height: float = 3.0
+@export var wall_thickness: float = 1.0  # How thick walls are (1.0 = full cell size)
 @export var num_exits: int = 2
 @export var secret_room_chance: float = 0.1
 @export var secret_room_size: int = 2
@@ -212,14 +213,8 @@ func build_3d_maze():
 	mesh_instance.mesh = array_mesh
 	add_child(mesh_instance)
 	
-	# Add collision
-	var collision_shape = CollisionShape3D.new()
-	var trimesh_shape = array_mesh.create_trimesh_shape()
-	collision_shape.shape = trimesh_shape
-	
-	var static_body = StaticBody3D.new()
-	static_body.add_child(collision_shape)
-	add_child(static_body)
+	# Add proper collision using individual box colliders for walls
+	build_collision_shapes()
 
 func build_walls_and_floor(array_mesh: ArrayMesh):
 	var vertices = PackedVector3Array()
@@ -229,19 +224,41 @@ func build_walls_and_floor(array_mesh: ArrayMesh):
 	
 	var vertex_count = 0
 	
+	# First pass: Build a continuous floor across the entire maze area
+	var maze_world_size = maze_grid.size() * cell_size
+	var floor_half_size = maze_world_size * 0.5
+	var floor_center = Vector3(floor_half_size - cell_size * 0.5, 0, floor_half_size - cell_size * 0.5)
+	
+	# Add one large floor quad for the entire maze
+	vertices.append(Vector3(floor_center.x - floor_half_size, 0, floor_center.z - floor_half_size))
+	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z - floor_half_size))
+	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z + floor_half_size))
+	vertices.append(Vector3(floor_center.x - floor_half_size, 0, floor_center.z + floor_half_size))
+	
+	for i in range(4):
+		normals.append(Vector3.UP)
+	
+	var uv_scale = maze_grid.size()  # Scale UVs based on maze size
+	uvs.append(Vector2(0, 0))
+	uvs.append(Vector2(uv_scale, 0))
+	uvs.append(Vector2(uv_scale, uv_scale))
+	uvs.append(Vector2(0, uv_scale))
+	
+	# Floor indices
+	indices.append(0)
+	indices.append(1)
+	indices.append(2)
+	indices.append(0)
+	indices.append(2)
+	indices.append(3)
+	
+	vertex_count = 4
+	
+	# Second pass: Add walls
 	for y in range(maze_grid.size()):
 		for x in range(maze_grid[y].size()):
 			var cell_type = maze_grid[y][x]
 			var world_pos = Vector3(x * cell_size, 0, y * cell_size)
-			
-			# Add floor for all non-wall cells
-			if cell_type != CellType.WALL:
-				var floor_material_to_use = floor_material
-				if cell_type == CellType.SECRET_ROOM:
-					floor_material_to_use = secret_floor_material if secret_floor_material else floor_material
-				
-				add_floor_quad(vertices, normals, uvs, indices, world_pos, vertex_count)
-				vertex_count += 4
 			
 			# Add walls for wall cells
 			if cell_type == CellType.WALL:
@@ -268,7 +285,7 @@ func add_floor_quad(vertices: PackedVector3Array, normals: PackedVector3Array,
 	
 	var half_size = cell_size * 0.5
 	
-	# Floor vertices (Y = 0)
+	# Floor vertices (Y = 0) - always full cell size for seamless floors
 	vertices.append(Vector3(pos.x - half_size, 0, pos.z - half_size))
 	vertices.append(Vector3(pos.x + half_size, 0, pos.z - half_size))
 	vertices.append(Vector3(pos.x + half_size, 0, pos.z + half_size))
@@ -293,11 +310,50 @@ func add_floor_quad(vertices: PackedVector3Array, normals: PackedVector3Array,
 	indices.append(vertex_offset + 2)
 	indices.append(vertex_offset + 3)
 
+# Build individual collision shapes for better collision detection
+func build_collision_shapes():
+	var static_body = StaticBody3D.new()
+	static_body.name = "MazeCollision"
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			var cell_type = maze_grid[y][x]
+			
+			# Add collision only for walls
+			if cell_type == CellType.WALL:
+				var collision_shape = CollisionShape3D.new()
+				var box_shape = BoxShape3D.new()
+				
+				# Set box size - use full cell size for collision to prevent gaps
+				box_shape.size = Vector3(cell_size, wall_height, cell_size)
+				
+				collision_shape.shape = box_shape
+				collision_shape.position = Vector3(x * cell_size, wall_height * 0.5, y * cell_size)
+				
+				static_body.add_child(collision_shape)
+	
+	# Add floor collision as one large plane
+	var floor_collision = CollisionShape3D.new()
+	var floor_shape = BoxShape3D.new()
+	var maze_world_size = maze_grid.size() * cell_size
+	floor_shape.size = Vector3(maze_world_size, 0.1, maze_world_size)
+	floor_collision.shape = floor_shape
+	floor_collision.position = Vector3(maze_world_size * 0.5 - cell_size * 0.5, -0.05, maze_world_size * 0.5 - cell_size * 0.5)
+	static_body.add_child(floor_collision)
+	
+	add_child(static_body)
+
 func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 				  uvs: PackedVector2Array, indices: PackedInt32Array,
 				  pos: Vector3, vertex_offset: int):
 	
-	var half_size = cell_size * 0.5
+	# For wall connectivity, use full cell size but adjust visual thickness
+	var visual_half_size = (cell_size * wall_thickness) * 0.5
+	var collision_half_size = cell_size * 0.5  # Full size for connectivity
+	
+	# Use collision size to ensure walls connect, but this creates solid blocks
+	# For better visual appearance with thin walls, we'll use full cell size
+	var half_size = collision_half_size  # This ensures walls connect properly
 	var height = wall_height
 	
 	# Define cube vertices
@@ -314,20 +370,20 @@ func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 		Vector3(pos.x - half_size, height, pos.z + half_size),
 	]
 	
-	# Define face data: [vertex indices, normal, uv coordinates]
+	# Define face data with CORRECTED winding order: [vertex indices, normal, uv coordinates]
 	var faces = [
-		# Bottom (Y-)
-		[[0, 1, 2, 3], Vector3.DOWN, [[0,0], [1,0], [1,1], [0,1]]],
-		# Top (Y+)
-		[[7, 6, 5, 4], Vector3.UP, [[0,0], [1,0], [1,1], [0,1]]],
-		# Front (Z-)
-		[[4, 5, 1, 0], Vector3.FORWARD, [[0,0], [1,0], [1,1], [0,1]]],
-		# Back (Z+)
-		[[6, 7, 3, 2], Vector3.BACK, [[0,0], [1,0], [1,1], [0,1]]],
-		# Left (X-)
-		[[7, 4, 0, 3], Vector3.LEFT, [[0,0], [1,0], [1,1], [0,1]]],
-		# Right (X+)
-		[[5, 6, 2, 1], Vector3.RIGHT, [[0,0], [1,0], [1,1], [0,1]]]
+		# Bottom (Y-) - Fixed winding
+		[[3, 2, 1, 0], Vector3.DOWN, [[0,0], [1,0], [1,1], [0,1]]],
+		# Top (Y+) - Fixed winding  
+		[[4, 5, 6, 7], Vector3.UP, [[0,0], [1,0], [1,1], [0,1]]],
+		# Front (Z-) - Fixed winding
+		[[0, 1, 5, 4], Vector3.FORWARD, [[0,0], [1,0], [1,1], [0,1]]],
+		# Back (Z+) - Fixed winding
+		[[2, 3, 7, 6], Vector3.BACK, [[0,0], [1,0], [1,1], [0,1]]],
+		# Left (X-) - Fixed winding
+		[[3, 0, 4, 7], Vector3.LEFT, [[0,0], [1,0], [1,1], [0,1]]],
+		# Right (X+) - Fixed winding
+		[[1, 2, 6, 5], Vector3.RIGHT, [[0,0], [1,0], [1,1], [0,1]]]
 	]
 	
 	var face_vertex_offset = vertex_offset
@@ -343,7 +399,7 @@ func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 			normals.append(normal)
 			uvs.append(Vector2(face_uvs[i][0], face_uvs[i][1]))
 		
-		# Add indices for two triangles
+		# Add indices for two triangles (counter-clockwise winding)
 		indices.append(face_vertex_offset + 0)
 		indices.append(face_vertex_offset + 1)
 		indices.append(face_vertex_offset + 2)

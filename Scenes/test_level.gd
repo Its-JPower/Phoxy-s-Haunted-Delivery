@@ -4,7 +4,7 @@ extends Node3D
 @export var player : CharacterBody3D
 @export var ANIM_PLAYER : AnimationPlayer
 @export var AUDIO_PLAYER : AudioStreamPlayer
-@onready var timer: Timer = $Timer
+#@onready var timer: Timer = $Timer
 
 @onready var LEVEL_START_AUDIO = preload("res://Assets/Audio/level_start.mp3")
 
