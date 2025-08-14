@@ -535,7 +535,8 @@ _data = {
 }
 
 [node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "ENEMY_RAYCAST", "BOX_ANIMATION_PLAYER") groups=["Player"]]
-collision_mask = 3
+collision_layer = 2
+collision_mask = 0
 script = ExtResource("1_e21d1")
 TILT_UPPER_LIMIT = 1.571
 CAMERA_CONTROLLER = NodePath("CameraController/Camera3D")

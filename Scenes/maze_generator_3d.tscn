@@ -4,3 +4,5 @@
 
 [node name="MazeGenerator3D" type="Node3D"]
 script = ExtResource("1_6p6wu")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]

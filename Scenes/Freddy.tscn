@@ -17,6 +17,7 @@ size = Vector3(28.7508, 8.34076, 1)
 size = Vector3(1, 2.86914, 1.23456)
 
 [node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
+collision_layer = 8
 script = ExtResource("1_mn02b")
 
 [node name="Freddy" parent="." instance=ExtResource("2_x4qok")]
@@ -132,10 +133,15 @@ autostart = true
 stream = ExtResource("4_hps1a")
 
 [node name="PlayerDetection" type="Area3D" parent="."]
+collision_layer = 4
+collision_mask = 2
+monitoring = false
+monitorable = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetection"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58962, -0.000213623)
 shape = SubResource("BoxShape3D_hps1a")
+disabled = true
 
 [connection signal="area_entered" from="PlayerDetection" to="." method="_on_player_detection_area_entered"]
 

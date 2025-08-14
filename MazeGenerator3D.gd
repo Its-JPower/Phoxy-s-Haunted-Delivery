@@ -55,6 +55,9 @@ func generate_maze():
 	
 	# Build 3D mesh
 	build_3d_maze()
+	
+	# Bake navigation mesh after everything is built
+	bake_navigation_mesh()
 
 func initialize_grid():
 	maze_grid = []
@@ -217,19 +220,24 @@ func build_3d_maze():
 	build_collision_shapes()
 
 func build_walls_and_floor(array_mesh: ArrayMesh):
+	# Build floor first (surface 0)
+	build_floor_surface(array_mesh)
+	
+	# Build walls second (surface 1) 
+	build_walls_surface(array_mesh)
+
+func build_floor_surface(array_mesh: ArrayMesh):
 	var vertices = PackedVector3Array()
 	var normals = PackedVector3Array()
 	var uvs = PackedVector2Array()
 	var indices = PackedInt32Array()
 	
-	var vertex_count = 0
-	
-	# First pass: Build a continuous floor across the entire maze area
+	# Create one large floor quad for the entire maze
 	var maze_world_size = maze_grid.size() * cell_size
 	var floor_half_size = maze_world_size * 0.5
 	var floor_center = Vector3(floor_half_size - cell_size * 0.5, 0, floor_half_size - cell_size * 0.5)
 	
-	# Add one large floor quad for the entire maze
+	# Add one large floor quad
 	vertices.append(Vector3(floor_center.x - floor_half_size, 0, floor_center.z - floor_half_size))
 	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z - floor_half_size))
 	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z + floor_half_size))
@@ -252,9 +260,29 @@ func build_walls_and_floor(array_mesh: ArrayMesh):
 	indices.append(2)
 	indices.append(3)
 	
-	vertex_count = 4
+	# Create floor surface
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = normals
+	arrays[Mesh.ARRAY_TEX_UV] = uvs
+	arrays[Mesh.ARRAY_INDEX] = indices
 	
-	# Second pass: Add walls
+	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	
+	# Apply floor material
+	if floor_material:
+		array_mesh.surface_set_material(0, floor_material)
+
+func build_walls_surface(array_mesh: ArrayMesh):
+	var vertices = PackedVector3Array()
+	var normals = PackedVector3Array()
+	var uvs = PackedVector2Array()
+	var indices = PackedInt32Array()
+	
+	var vertex_count = 0
+	
+	# Add walls
 	for y in range(maze_grid.size()):
 		for x in range(maze_grid[y].size()):
 			var cell_type = maze_grid[y][x]
@@ -265,7 +293,7 @@ func build_walls_and_floor(array_mesh: ArrayMesh):
 				add_wall_cube(vertices, normals, uvs, indices, world_pos, vertex_count)
 				vertex_count += 24  # 6 faces * 4 vertices
 
-	# Create mesh surface
+	# Create walls surface
 	var arrays = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -275,9 +303,9 @@ func build_walls_and_floor(array_mesh: ArrayMesh):
 	
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	
-	# Apply materials
+	# Apply wall material
 	if wall_material:
-		array_mesh.surface_set_material(0, wall_material)
+		array_mesh.surface_set_material(1, wall_material)
 
 func add_floor_quad(vertices: PackedVector3Array, normals: PackedVector3Array, 
 				   uvs: PackedVector2Array, indices: PackedInt32Array, 
@@ -309,39 +337,6 @@ func add_floor_quad(vertices: PackedVector3Array, normals: PackedVector3Array,
 	indices.append(vertex_offset + 0)
 	indices.append(vertex_offset + 2)
 	indices.append(vertex_offset + 3)
-
-# Build individual collision shapes for better collision detection
-func build_collision_shapes():
-	var static_body = StaticBody3D.new()
-	static_body.name = "MazeCollision"
-	
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			
-			# Add collision only for walls
-			if cell_type == CellType.WALL:
-				var collision_shape = CollisionShape3D.new()
-				var box_shape = BoxShape3D.new()
-				
-				# Set box size - use full cell size for collision to prevent gaps
-				box_shape.size = Vector3(cell_size, wall_height, cell_size)
-				
-				collision_shape.shape = box_shape
-				collision_shape.position = Vector3(x * cell_size, wall_height * 0.5, y * cell_size)
-				
-				static_body.add_child(collision_shape)
-	
-	# Add floor collision as one large plane
-	var floor_collision = CollisionShape3D.new()
-	var floor_shape = BoxShape3D.new()
-	var maze_world_size = maze_grid.size() * cell_size
-	floor_shape.size = Vector3(maze_world_size, 0.1, maze_world_size)
-	floor_collision.shape = floor_shape
-	floor_collision.position = Vector3(maze_world_size * 0.5 - cell_size * 0.5, -0.05, maze_world_size * 0.5 - cell_size * 0.5)
-	static_body.add_child(floor_collision)
-	
-	add_child(static_body)
 
 func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 				  uvs: PackedVector2Array, indices: PackedInt32Array,
@@ -483,6 +478,110 @@ func get_spawn_position_far_from_exits() -> Vector3:
 	
 	return grid_to_world(best_position) + Vector3(0, 1, 0)
 
+# Advanced enemy spawning utilities
+func get_dead_end_positions() -> Array[Vector2i]:
+	var dead_ends: Array[Vector2i] = []
+	
+	# Find cells that are paths but only have one neighbor
+	for y in range(1, maze_grid.size() - 1, 2):
+		for x in range(1, maze_grid[y].size() - 1, 2):
+			if maze_grid[y][x] == CellType.PATH:
+				var neighbor_count = 0
+				
+				# Check all 4 directions for path connections
+				for direction in DIRECTIONS:
+					var neighbor_pos = Vector2i(x, y) + direction
+					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
+						neighbor_count += 1
+				
+				# Dead end = only 1 connection
+				if neighbor_count == 1:
+					dead_ends.append(Vector2i(x, y))
+	
+	return dead_ends
+
+func get_intersection_positions() -> Array[Vector2i]:
+	var intersections: Array[Vector2i] = []
+	
+	# Find cells that are paths with 3+ neighbors
+	for y in range(1, maze_grid.size() - 1, 2):
+		for x in range(1, maze_grid[y].size() - 1, 2):
+			if maze_grid[y][x] == CellType.PATH:
+				var neighbor_count = 0
+				
+				# Check all 4 directions for path connections
+				for direction in DIRECTIONS:
+					var neighbor_pos = Vector2i(x, y) + direction
+					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
+						neighbor_count += 1
+				
+				# Intersection = 3+ connections
+				if neighbor_count >= 3:
+					intersections.append(Vector2i(x, y))
+	
+	return intersections
+
+func get_positions_near_exits(radius: int = 3) -> Array[Vector2i]:
+	var near_exit_positions: Array[Vector2i] = []
+	var exit_positions: Array[Vector2i] = []
+	
+	# Find all exits first
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			if maze_grid[y][x] == CellType.EXIT:
+				exit_positions.append(Vector2i(x, y))
+	
+	# Find path positions near exits
+	for y in range(1, maze_grid.size() - 1, 2):
+		for x in range(1, maze_grid[y].size() - 1, 2):
+			if maze_grid[y][x] == CellType.PATH:
+				var current_pos = Vector2i(x, y)
+				
+				# Check if within radius of any exit
+				for exit_pos in exit_positions:
+					if current_pos.distance_to(exit_pos) <= radius:
+						near_exit_positions.append(current_pos)
+						break
+	
+	return near_exit_positions
+
+func get_corridor_positions() -> Array[Vector2i]:
+	var corridors: Array[Vector2i] = []
+	
+	# Find cells that are paths with exactly 2 neighbors (corridor pieces)
+	for y in range(1, maze_grid.size() - 1, 2):
+		for x in range(1, maze_grid[y].size() - 1, 2):
+			if maze_grid[y][x] == CellType.PATH:
+				var neighbor_count = 0
+				
+				# Check all 4 directions for path connections
+				for direction in DIRECTIONS:
+					var neighbor_pos = Vector2i(x, y) + direction
+					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
+						neighbor_count += 1
+				
+				# Corridor = exactly 2 connections
+				if neighbor_count == 2:
+					corridors.append(Vector2i(x, y))
+	
+	return corridors
+
+# Get positions far from player spawn
+func get_positions_far_from_spawn(min_distance: float = 10.0) -> Array[Vector2i]:
+	var spawn_grid_pos = Vector2i(1, 1)  # Default spawn position
+	var far_positions: Array[Vector2i] = []
+	
+	for y in range(1, maze_grid.size() - 1, 2):
+		for x in range(1, maze_grid[y].size() - 1, 2):
+			if maze_grid[y][x] == CellType.PATH:
+				var current_pos = Vector2i(x, y)
+				var distance = current_pos.distance_to(spawn_grid_pos)
+				
+				if distance >= min_distance:
+					far_positions.append(current_pos)
+	
+	return far_positions
+
 # Helper function to check if position is near an exit
 func is_near_exit(pos: Vector2i, radius: int) -> bool:
 	for dy in range(-radius, radius + 1):
@@ -491,6 +590,97 @@ func is_near_exit(pos: Vector2i, radius: int) -> bool:
 			if is_in_bounds(check_pos) and maze_grid[check_pos.y][check_pos.x] == CellType.EXIT:
 				return true
 	return false
+
+# Bake the navigation mesh for AI pathfinding
+# Add this to your MazeGenerator3D script
+
+# Better navigation mesh baking
+# Add this to your MazeGenerator3D script - Updated build_collision_shapes function
+
+# Add this to your MazeGenerator3D script - Updated build_collision_shapes function
+
+func build_collision_shapes():
+	var static_body = StaticBody3D.new()
+	static_body.name = "MazeCollision"
+	
+	# Set collision layers for walls
+	static_body.collision_layer = 1  # Layer 1 = "Walls"
+	static_body.collision_mask = 0   # Walls don't need to detect anything
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			var cell_type = maze_grid[y][x]
+			
+			# Add collision only for walls
+			if cell_type == CellType.WALL:
+				var collision_shape = CollisionShape3D.new()
+				var box_shape = BoxShape3D.new()
+				
+				# Set box size - use full cell size for collision to prevent gaps
+				box_shape.size = Vector3(cell_size, wall_height, cell_size)
+				
+				collision_shape.shape = box_shape
+				collision_shape.position = Vector3(x * cell_size, wall_height * 0.5, y * cell_size)
+				
+				static_body.add_child(collision_shape)
+	
+	# Add floor collision as one large plane
+	var floor_collision = CollisionShape3D.new()
+	var floor_shape = BoxShape3D.new()
+	var maze_world_size = maze_grid.size() * cell_size
+	floor_shape.size = Vector3(maze_world_size, 0.1, maze_world_size)
+	floor_collision.shape = floor_shape
+	floor_collision.position = Vector3(maze_world_size * 0.5 - cell_size * 0.5, -0.05, maze_world_size * 0.5 - cell_size * 0.5)
+	static_body.add_child(floor_collision)
+	
+	add_child(static_body)
+	
+	print("Maze walls set to collision layer 1 (Walls)")
+
+# Better navigation mesh baking
+func bake_navigation_mesh():
+	await get_tree().process_frame
+	
+	# Create NavigationRegion3D if it doesn't exist
+	var nav_region = find_child("NavigationRegion3D", false, false) as NavigationRegion3D
+	
+	if not nav_region:
+		print("Creating NavigationRegion3D...")
+		nav_region = NavigationRegion3D.new()
+		nav_region.name = "NavigationRegion3D"
+		add_child(nav_region)
+	
+	# Create and configure navigation mesh
+	if not nav_region.navigation_mesh:
+		nav_region.navigation_mesh = NavigationMesh.new()
+	
+	var nav_mesh = nav_region.navigation_mesh
+	
+	# CRITICAL: Better settings for maze navigation
+	nav_mesh.cell_size = 0.25  # Smaller cells for more precise paths
+	nav_mesh.cell_height = 0.2
+	nav_mesh.agent_height = 2.0
+	nav_mesh.agent_radius = 0.3  # Smaller radius to fit through passages
+	nav_mesh.agent_max_climb = 0.5
+	nav_mesh.agent_max_slope = 45.0
+	nav_mesh.region_min_size = 0.5  # Allow smaller walkable areas
+	nav_mesh.region_merge_size = 2.0
+	nav_mesh.edge_max_length = 5.0
+	nav_mesh.edge_max_error = 0.5
+	nav_mesh.vertices_per_polygon = 6
+	
+	# Parse geometry from mesh instances
+	nav_mesh.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_MESH_INSTANCES
+	nav_mesh.geometry_collision_mask = 1  # Only use layer 1 (walls) for navigation
+	nav_mesh.geometry_source_geometry_mode = NavigationMesh.SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN
+	
+	print("Baking navigation mesh with improved settings...")
+	nav_region.bake_navigation_mesh()
+	print("Navigation mesh baked!")
+
+# Get the navigation region for external use
+func get_navigation_region() -> NavigationRegion3D:
+	return find_child("NavigationRegion3D", false, false) as NavigationRegion3D
 
 # Utility function to get world position from grid coordinates
 func grid_to_world(grid_pos: Vector2i) -> Vector3:
