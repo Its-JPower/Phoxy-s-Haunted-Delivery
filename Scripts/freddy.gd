@@ -1,309 +1,352 @@
 extends CharacterBody3D
 
-@onready var nav_agent = $NavigationAgent3D
-@onready var TARGET : CharacterBody3D = get_tree().get_first_node_in_group("Player")
-@export var SPEED = 8
-@export var GRAVITY = -20.0  # Gravity for the enemy
-@export var DIRECT_MOVEMENT_THRESHOLD = 2.0
-@onready var FOOTSTEP_TIMER: Timer = $FootstepTimer
-@onready var AUDIO_PLAYER: AudioStreamPlayer3D = $AudioStreamPlayer3D
-@onready var ANIM_PLAYER: AnimationPlayer = $Freddy/AnimationPlayer
+@onready var footstep_timer: Timer = $FootstepTimer
+@onready var audio_player: AudioStreamPlayer3D = $AudioStreamPlayer3D
+@onready var anim_player: AnimationPlayer = $Freddy/AnimationPlayer
+@onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 
-# Navigation tracking
+@export var speed = 6.0  # Reduced speed for better control
+@export var gravity = -20.0
+@export var path_update_interval = 0.5  # Less frequent updates
+
+var target: CharacterBody3D
+var path_update_timer = 0.0
 var navigation_ready = false
-var target_update_timer = 0.0
-var target_update_interval = 0.2  # Update more frequently - every 0.2 seconds
-var use_fallback_movement = false
-var last_valid_direction = Vector3.ZERO
-var ground_check_ray: RayCast3D
+var maze_generator: MazeGenerator3D
+var stuck_timer = 0.0
+var last_position = Vector3.ZERO
+var wall_avoidance_timer = 0.0
 
 func _ready():
-	# Add to enemies group - CRITICAL!
 	add_to_group("Enemies")
 	
-	# Create ground check raycast
-	ground_check_ray = RayCast3D.new()
-	ground_check_ray.target_position = Vector3(0, -2, 0)
-	ground_check_ray.enabled = true
-	add_child(ground_check_ray)
+	print("Enemy spawned at position: ", global_position)
 	
-	# Debug: Check if we found the player
-	if TARGET:
-		print("Enemy found player at: ", TARGET.global_position)
-	else:
-		print("ERROR: Enemy could not find player!")
+	# Find the maze generator
+	maze_generator = get_tree().get_first_node_in_group("MazeGenerator")
+	if not maze_generator:
+		maze_generator = find_parent("*").find_child("MazeGenerator3D", true, false)
 	
-	# Configure NavigationAgent3D settings
-	if nav_agent:
-		nav_agent.path_desired_distance = 0.8
-		nav_agent.target_desired_distance = 2.0
-		nav_agent.path_max_distance = 50.0
-		nav_agent.avoidance_enabled = false
-		nav_agent.radius = 0.4  # Smaller collision radius
-		nav_agent.height = 1.8
+	# Configure navigation agent with VERY conservative settings
+	if navigation_agent:
+		# Much larger radius to stay far from walls
+		navigation_agent.radius = 1.2  # INCREASED - stay much further from walls
+		navigation_agent.height = 2.0
+		navigation_agent.path_desired_distance = 1.5  # Stay further from waypoints
+		navigation_agent.target_desired_distance = 3.0  # Stop much further from target
+		navigation_agent.path_max_distance = 50.0
+		navigation_agent.avoidance_enabled = true
+		navigation_agent.neighbor_distance = 4.0
+		navigation_agent.max_neighbors = 3
+		navigation_agent.time_horizon = 2.0
+		navigation_agent.max_speed = speed
 		
-		# Connect signals
-		nav_agent.navigation_finished.connect(_on_navigation_finished)
-		nav_agent.target_reached.connect(_on_target_reached)
-		nav_agent.path_changed.connect(_on_path_changed)
+		# Connect navigation signals
+		navigation_agent.navigation_finished.connect(_on_navigation_finished)
+		navigation_agent.target_reached.connect(_on_target_reached)
+		
+		print("Navigation agent configured with radius: ", navigation_agent.radius)
 	
-	# Wait for navigation setup
-	await get_tree().create_timer(1.0).timeout
-	_setup_navigation()
+	# Wait for navigation to be ready
+	call_deferred("setup_navigation")
 
-func _setup_navigation():
-	var nav_map = get_world_3d().navigation_map
-	if NavigationServer3D.map_is_active(nav_map):
-		navigation_ready = true
-		print("Enemy navigation ready at position: ", global_position)
-		_start_following_player()
-	else:
-		print("Navigation not ready, using fallback movement")
-		use_fallback_movement = true
-		navigation_ready = true  # Allow movement with fallback
+func setup_navigation():
+	# Wait for navigation map to be ready
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	
+	target = get_tree().get_first_node_in_group("Player")
+	if not target:
+		print("ERROR: No player found!")
+		return
+	
+	print("Enemy found player")
+	
+	# Move to a safe starting position
+	var safe_start = find_safe_starting_position()
+	if safe_start != Vector3.ZERO:
+		global_position = safe_start
+		print("Moved to safe starting position")
+	
+	navigation_ready = true
+	last_position = global_position
 
-func _start_following_player():
-	if TARGET and navigation_ready:
-		update_target_location(TARGET.global_position)
+func find_safe_starting_position() -> Vector3:
+	"""Find a safe position away from walls"""
+	
+	# Try positions in a spiral pattern around current position
+	var test_positions = []
+	var cell_size = 4.0  # Assuming your cell size
+	
+	for radius in range(1, 5):  # Test increasing distances
+		for angle in range(0, 360, 45):  # Test 8 directions
+			var offset = Vector3(
+				cos(deg_to_rad(angle)) * radius * cell_size,
+				0,
+				sin(deg_to_rad(angle)) * radius * cell_size
+			)
+			test_positions.append(global_position + offset)
+	
+	# Test each position for safety
+	for pos in test_positions:
+		if is_position_safe(pos):
+			return pos
+	
+	return Vector3.ZERO  # No safe position found
 
-func _physics_process(delta: float) -> void:
-	# Handle freeze state
+func is_position_safe(pos: Vector3) -> bool:
+	"""Check if a position is safe (not too close to walls)"""
+	
+	var space_state = get_world_3d().direct_space_state
+	var safety_radius = 2.0  # Minimum distance from walls
+	
+	# Check 8 directions around the position
+	for angle in range(0, 360, 45):
+		var direction = Vector3(cos(deg_to_rad(angle)), 0, sin(deg_to_rad(angle)))
+		var from = pos + Vector3(0, 0.5, 0)
+		var to = from + direction * safety_radius
+		
+		var query = PhysicsRayQueryParameters3D.create(from, to)
+		query.collision_mask = 1  # Wall layer
+		query.exclude = [self]
+		
+		var result = space_state.intersect_ray(query)
+		if result:
+			return false  # Too close to a wall
+	
+	return true  # Position is safe
+
+func _physics_process(delta):
+	# Handle freeze
 	if Global.freeze:
-		_handle_freeze_state()
+		handle_freeze()
 		return
 	else:
-		_handle_unfreeze_state()
+		handle_unfreeze()
 	
-	if not navigation_ready or not TARGET:
+	if not target or not navigation_ready:
 		return
 	
-	# Apply gravity first
+	# Apply gravity
 	if not is_on_floor():
-		velocity.y += GRAVITY * delta
+		velocity.y += gravity * delta
 	else:
-		velocity.y = 0  # Reset Y velocity when on ground
+		velocity.y = 0
 	
-	# Update target more intelligently
-	target_update_timer += delta
-	var should_update_target = false
+	# Check if we're stuck
+	check_if_stuck(delta)
 	
-	# Regular periodic update
-	if target_update_timer >= target_update_interval:
-		should_update_target = true
-		target_update_timer = 0.0
+	# Wall avoidance timer
+	wall_avoidance_timer -= delta
 	
-	# Update if navigation finished (reached old target)
-	if nav_agent.is_navigation_finished():
-		should_update_target = true
-	
-	# Update if player moved significantly from last target
-	if TARGET:
-		var current_target = nav_agent.get_target_position()
-		var distance_moved = TARGET.global_position.distance_to(current_target)
-		if distance_moved > 3.0:  # Player moved more than 3 units
-			should_update_target = true
-	
-	if should_update_target and TARGET:
-		update_target_location(TARGET.global_position)
-	
-	# Choose movement method - only affect X and Z velocity
-	var distance_to_player = global_position.distance_to(TARGET.global_position)
-	var horizontal_movement = Vector3.ZERO
-	
-	if use_fallback_movement or distance_to_player < DIRECT_MOVEMENT_THRESHOLD:
-		horizontal_movement = _get_direct_movement_direction()
+	# Use navigation if available, otherwise use safe direct movement
+	if navigation_agent and use_navigation_movement(delta):
+		pass  # Navigation handled movement
 	else:
-		horizontal_movement = _get_navigation_movement_direction()
+		use_safe_direct_movement(delta)
 	
-	# Apply horizontal movement (preserve Y velocity for gravity)
-	velocity.x = horizontal_movement.x * SPEED
-	velocity.z = horizontal_movement.z * SPEED
-	
-	# Apply movement
 	move_and_slide()
+	handle_footsteps()
 	
-	# Handle audio
-	_handle_footstep_audio()
+	# Update last position for stuck detection
+	last_position = global_position
 
-func _get_navigation_movement_direction() -> Vector3:
-	# Check if navigation path is valid
-	if nav_agent.is_navigation_finished():
-		return _get_direct_movement_direction()
+func use_navigation_movement(delta) -> bool:
+	"""Try to use navigation agent movement. Returns true if successful."""
 	
-	var current_location = global_position
-	var next_location = nav_agent.get_next_path_position()
-	var direction = (next_location - current_location).normalized()
+	# Update target periodically
+	path_update_timer += delta
+	if path_update_timer >= path_update_interval:
+		path_update_timer = 0.0
+		navigation_agent.target_position = target.global_position
 	
-	# Keep movement horizontal
+	# Check if navigation is working
+	if navigation_agent.is_navigation_finished():
+		return false  # Navigation failed
+	
+	var next_path_position = navigation_agent.get_next_path_position()
+	var direction = (next_path_position - global_position)
 	direction.y = 0
-	direction = direction.normalized()
 	
-	# Check if we can actually reach the next position
-	if direction.length() < 0.1:
-		return _get_direct_movement_direction()
+	var distance_to_waypoint = direction.length()
 	
-	# Store valid direction for fallback
-	last_valid_direction = direction
-	
-	# Look at target
-	_look_at_player()
-	
-	return direction
-
-func _get_direct_movement_direction() -> Vector3:
-	if not TARGET:
-		return Vector3.ZERO
-	
-	# When using direct movement, always move toward current player position
-	var direction_to_player = (TARGET.global_position - global_position).normalized()
-	direction_to_player.y = 0  # Keep movement horizontal
-	
-	# Use shape casting instead of raycast for better collision detection
-	var space_state = get_world_3d().direct_space_state
-	var shape = CapsuleShape3D.new()
-	shape.radius = 0.4
-	shape.height = 1.8
-	
-	var query = PhysicsShapeQueryParameters3D.new()
-	query.shape = shape
-	query.transform = Transform3D(Basis(), global_position + direction_to_player * 1.0)
-	query.collision_mask = 1  # Only check layer 1 (walls)
-	query.exclude = [self]  # Don't collide with self
-	
-	var collisions = space_state.intersect_shape(query)
-	
-	if collisions.is_empty():
-		# Direct path is clear
-		last_valid_direction = direction_to_player
-		_look_at_player()
-		return direction_to_player
+	# Only move if we're not too close to the waypoint
+	if distance_to_waypoint > navigation_agent.path_desired_distance:
+		direction = direction.normalized()
+		
+		# CRITICAL: Always check for walls before moving
+		if not will_hit_wall(direction, delta):
+			velocity.x = direction.x * speed * 0.7  # Reduced speed for safety
+			velocity.z = direction.z * speed * 0.7
+			
+			# Smooth rotation
+			if direction.length() > 0.1:
+				var look_target = global_position + direction
+				var target_transform = transform.looking_at(look_target, Vector3.UP)
+				transform = transform.interpolate_with(target_transform, 3.0 * delta)
+			
+			return true
+		else:
+			# Wall detected - stop and use direct movement
+			velocity.x = 0
+			velocity.z = 0
+			wall_avoidance_timer = 1.0  # Use direct movement for 1 second
+			return false
 	else:
-		# Path blocked, try wall sliding
-		return _handle_wall_sliding(direction_to_player)
+		# Close to waypoint, slow down
+		velocity.x = lerp(velocity.x, 0.0, 5.0 * delta)
+		velocity.z = lerp(velocity.z, 0.0, 5.0 * delta)
+		return true
 
-func _handle_wall_sliding(blocked_direction: Vector3) -> Vector3:
-	# Get the wall normal from collision
+func use_safe_direct_movement(delta):
+	"""Safe direct movement with wall avoidance"""
+	
+	if not target:
+		return
+	
+	var direction_to_player = (target.global_position - global_position).normalized()
+	direction_to_player.y = 0
+	
+	# Check if direct path is blocked
+	if will_hit_wall(direction_to_player, delta):
+		# Try to find a way around the wall
+		var avoid_direction = find_wall_avoidance_direction(direction_to_player)
+		if avoid_direction != Vector3.ZERO:
+			velocity.x = avoid_direction.x * speed * 0.4
+			velocity.z = avoid_direction.z * speed * 0.4
+		else:
+			# Can't find a way around - stop
+			velocity.x = 0
+			velocity.z = 0
+	else:
+		# Direct path is clear
+		velocity.x = direction_to_player.x * speed * 0.5
+		velocity.z = direction_to_player.z * speed * 0.5
+	
+	# Look at player
+	if direction_to_player.length() > 0.1:
+		var look_target = Vector3(target.global_position.x, global_position.y, target.global_position.z)
+		var target_transform = transform.looking_at(look_target, Vector3.UP)
+		transform = transform.interpolate_with(target_transform, 2.0 * delta)
+
+func will_hit_wall(direction: Vector3, delta: float) -> bool:
+	"""Check if moving in a direction will hit a wall"""
+	
 	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(
-		global_position + Vector3(0, 1, 0),
-		global_position + Vector3(0, 1, 0) + blocked_direction * 1.5
-	)
-	query.collision_mask = 1  # Only walls
+	var from = global_position + Vector3(0, 0.5, 0)
+	var move_distance = speed * delta * 3.0  # Look ahead 3 frames
+	var to = from + direction.normalized() * move_distance
+	
+	var query = PhysicsRayQueryParameters3D.create(from, to)
+	query.collision_mask = 1  # Wall layer
+	query.exclude = [self]
 	
 	var result = space_state.intersect_ray(query)
-	
-	if result.has("normal"):
-		# Slide along the wall
-		var wall_normal = result["normal"]
-		var slide_direction = blocked_direction - wall_normal * blocked_direction.dot(wall_normal)
-		slide_direction.y = 0
-		slide_direction = slide_direction.normalized()
-		
-		if slide_direction.length() > 0.1:
-			_look_at_player()  # Still look at player while sliding
-			return slide_direction * 0.8  # Slower when sliding
-	
-	# If sliding fails, try perpendicular movement
-	var right_dir = blocked_direction.cross(Vector3.UP).normalized()
-	var left_dir = -right_dir
-	
-	# Test both perpendicular directions
-	for test_dir in [right_dir, left_dir]:
-		var test_query = PhysicsShapeQueryParameters3D.new()
-		var test_shape = CapsuleShape3D.new()
-		test_shape.radius = 0.4
-		test_shape.height = 1.8
-		test_query.shape = test_shape
-		test_query.transform = Transform3D(Basis(), global_position + test_dir * 0.8)
-		test_query.collision_mask = 1
-		
-		var test_collisions = space_state.intersect_shape(test_query)
-		if test_collisions.is_empty():
-			_look_at_player()
-			return test_dir * 0.6  # Even slower when going around
-	
-	# If all else fails, use last valid direction or stop
-	if last_valid_direction.length() > 0:
-		return last_valid_direction * 0.3
-	
-	return Vector3.ZERO
+	return result != null
 
-func _look_at_player():
-	if TARGET:
-		var target_position = Vector3(
-			TARGET.global_position.x,
-			global_position.y,
-			TARGET.global_position.z
-		)
-		look_at(target_position, Vector3.UP)
+func find_wall_avoidance_direction(blocked_direction: Vector3) -> Vector3:
+	"""Find a direction to avoid walls"""
+	
+	# Try directions to the left and right of the blocked direction
+	var avoid_angles = [45, -45, 90, -90, 135, -135]
+	
+	for angle in avoid_angles:
+		var test_direction = blocked_direction.rotated(Vector3.UP, deg_to_rad(angle))
+		if not will_hit_wall(test_direction, get_physics_process_delta_time()):
+			return test_direction
+	
+	return Vector3.ZERO  # No clear direction found
 
-func _handle_freeze_state():
-	if ANIM_PLAYER:
-		ANIM_PLAYER.pause()
-	# Keep gravity but stop horizontal movement
+func check_if_stuck(delta):
+	"""Check if the enemy is stuck and try to unstick"""
+	
+	var movement_threshold = 0.1
+	if global_position.distance_to(last_position) < movement_threshold:
+		stuck_timer += delta
+		
+		if stuck_timer > 2.0:  # Stuck for 2 seconds
+			print("Enemy appears stuck - trying to unstick")
+			unstick_enemy()
+			stuck_timer = 0.0
+	else:
+		stuck_timer = 0.0
+
+func unstick_enemy():
+	"""Try to unstick the enemy"""
+	
+	# Try to move to a nearby safe position
+	var safe_pos = find_safe_starting_position()
+	if safe_pos != Vector3.ZERO and safe_pos.distance_to(global_position) < 20.0:
+		global_position = safe_pos
+		velocity = Vector3.ZERO
+		print("Moved enemy to unstick")
+		return
+	
+	# If that fails, try moving in a random direction
+	for i in range(8):
+		var random_direction = Vector3(randf_range(-1, 1), 0, randf_range(-1, 1)).normalized()
+		if not will_hit_wall(random_direction, 0.1):
+			velocity.x = random_direction.x * speed * 0.3
+			velocity.z = random_direction.z * speed * 0.3
+			print("Using random direction to unstick")
+			break
+
+func handle_freeze():
+	if anim_player:
+		anim_player.pause()
+	if audio_player:
+		audio_player.stream_paused = true
+	if footstep_timer:
+		footstep_timer.paused = true
+	
 	velocity.x = 0
 	velocity.z = 0
 	if not is_on_floor():
-		velocity.y += GRAVITY * get_physics_process_delta_time()
+		velocity.y += gravity * get_physics_process_delta_time()
 	move_and_slide()
-	
-	if AUDIO_PLAYER:
-		AUDIO_PLAYER.stream_paused = true
-	if FOOTSTEP_TIMER:
-		FOOTSTEP_TIMER.paused = true
 
-func _handle_unfreeze_state():
-	if ANIM_PLAYER:
-		ANIM_PLAYER.play()
-	if AUDIO_PLAYER:
-		AUDIO_PLAYER.stream_paused = false
-	if FOOTSTEP_TIMER:
-		FOOTSTEP_TIMER.paused = false
+func handle_unfreeze():
+	if anim_player:
+		anim_player.play()
+	if audio_player:
+		audio_player.stream_paused = false
+	if footstep_timer:
+		footstep_timer.paused = false
 
-func _handle_footstep_audio():
-	if velocity.length() > 0 and FOOTSTEP_TIMER and FOOTSTEP_TIMER.time_left <= 0:
-		if AUDIO_PLAYER:
-			AUDIO_PLAYER.pitch_scale = randf_range(0.8, 1.2)
-			AUDIO_PLAYER.play()
-		FOOTSTEP_TIMER.start(0.85)
+func handle_footsteps():
+	if velocity.length() > 0.5 and footstep_timer and footstep_timer.time_left <= 0:
+		if audio_player:
+			audio_player.pitch_scale = randf_range(0.8, 1.2)
+			audio_player.play()
+		footstep_timer.start(0.85)
 
-func update_target_location(target_location):
-	if not navigation_ready or not nav_agent:
-		return
-	
-	# Always try navigation first
-	nav_agent.set_target_position(target_location)
-	
-	# Check if target is reachable after a short delay
-	await get_tree().process_frame
-	
-	if not nav_agent.is_target_reachable():
-		print("Target not reachable via navigation, using fallback movement")
-		use_fallback_movement = true
-	else:
-		use_fallback_movement = false
-		print("Updated target to: ", target_location)
-
-# Signal handlers
 func _on_navigation_finished():
-	if TARGET:
-		update_target_location(TARGET.global_position)
+	if target and navigation_agent and randf() < 0.2:
+		call_deferred("set_new_target")
+
+func set_new_target():
+	navigation_agent.target_position = target.global_position
 
 func _on_target_reached():
-	if TARGET:
-		update_target_location(TARGET.global_position)
+	pass
 
-func _on_path_changed():
-	# Reset fallback when we get a new valid path
-	use_fallback_movement = false
+func update_target_location(target_location: Vector3):
+	if navigation_agent and navigation_ready:
+		navigation_agent.target_position = target_location
 
 # Debug function
 func _input(event):
 	if event.is_action_pressed("ui_accept"):
-		print("=== ENEMY DEBUG ===")
-		print("Navigation ready: ", navigation_ready)
-		print("Use fallback: ", use_fallback_movement)
-		print("Distance to player: ", global_position.distance_to(TARGET.global_position) if TARGET else "No target")
-		print("Nav target reachable: ", nav_agent.is_target_reachable() if nav_agent else "No nav agent")
+		print("=== FREDDY DEBUG ===")
+		print("Position: ", global_position)
+		print("Target: ", target.global_position if target else "None")
 		print("Velocity: ", velocity)
-		print("==================")
+		print("Stuck timer: ", stuck_timer)
+		print("Wall avoidance timer: ", wall_avoidance_timer)
+		if navigation_agent:
+			print("Nav target: ", navigation_agent.target_position)
+			print("Nav finished: ", navigation_agent.is_navigation_finished())
+			print("Agent radius: ", navigation_agent.radius)
+		print("Is position safe: ", is_position_safe(global_position))
+		print("===================")

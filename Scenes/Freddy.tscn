@@ -16,7 +16,7 @@ size = Vector3(28.7508, 8.34076, 1)
 [sub_resource type="BoxShape3D" id="BoxShape3D_hps1a"]
 size = Vector3(1, 2.86914, 1.23456)
 
-[node name="WA_FNAF" type="CharacterBody3D" groups=["enemies"]]
+[node name="WA_FNAF" type="CharacterBody3D" groups=["Enemies"]]
 collision_layer = 8
 script = ExtResource("1_mn02b")
 
@@ -116,7 +116,7 @@ shape = SubResource("CapsuleShape3D_w06hg")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 
-[node name="Area3D" type="Area3D" parent="." groups=["Enemies"]]
+[node name="Area3D" type="Area3D" parent="."]
 collision_layer = 2
 collision_mask = 2
 
@@ -142,7 +142,5 @@ monitorable = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58962, -0.000213623)
 shape = SubResource("BoxShape3D_hps1a")
 disabled = true
-
-[connection signal="area_entered" from="PlayerDetection" to="." method="_on_player_detection_area_entered"]
 
 [editable path="Freddy"]
