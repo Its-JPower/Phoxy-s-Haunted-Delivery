@@ -5,7 +5,7 @@ class_name MazeGenerator3D
 @export var maze_size: int = 10
 @export var cell_size: float = 4.0
 @export var wall_height: float = 3.0
-@export var wall_thickness: float = 1.0  # How thick walls are (1.0 = full cell size)
+@export var wall_thickness: float = 1.0
 @export var num_exits: int = 2
 @export var secret_room_chance: float = 0.1
 @export var secret_room_size: int = 2
@@ -23,12 +23,8 @@ enum CellType {
 	SECRET_ROOM
 }
 
-# Direction vectors
 const DIRECTIONS = [
-	Vector2i(0, 1),   # North
-	Vector2i(1, 0),   # East
-	Vector2i(0, -1),  # South
-	Vector2i(-1, 0)   # West
+	Vector2i(0, 1), Vector2i(1, 0), Vector2i(0, -1), Vector2i(-1, 0)
 ]
 
 var maze_grid: Array[Array]
@@ -38,30 +34,16 @@ func _ready():
 	generate_maze()
 
 func generate_maze():
-	# Clear existing maze
 	clear_maze()
-	
-	# Initialize grid
 	initialize_grid()
-	
-	# Generate maze using recursive backtracking
 	recursive_backtrack(Vector2i(1, 1))
-	
-	# Add multiple exits
 	create_exits()
-	
-	# Add secret rooms
 	add_secret_rooms()
-	
-	# Build 3D mesh
 	build_3d_maze()
-	
-	# Bake navigation mesh after everything is built
 	bake_navigation_mesh()
 
 func initialize_grid():
 	maze_grid = []
-	# Create grid with walls (odd positions will be paths)
 	for y in range(maze_size * 2 + 1):
 		var row: Array[int] = []
 		for x in range(maze_size * 2 + 1):
@@ -73,7 +55,6 @@ func recursive_backtrack(start_pos: Vector2i):
 	var current = start_pos
 	var visited = {}
 	
-	# Mark starting position as path
 	maze_grid[current.y][current.x] = CellType.PATH
 	visited[current] = true
 	
@@ -81,11 +62,9 @@ func recursive_backtrack(start_pos: Vector2i):
 		var neighbors = get_unvisited_neighbors(current, visited)
 		
 		if neighbors.size() > 0:
-			# Choose random neighbor
 			var next_cell = neighbors[randi() % neighbors.size()]
 			stack.push_back(current)
 			
-			# Remove wall between current and next cell
 			var wall_pos = current + (next_cell - current) / 2
 			maze_grid[wall_pos.y][wall_pos.x] = CellType.PATH
 			maze_grid[next_cell.y][next_cell.x] = CellType.PATH
@@ -99,12 +78,10 @@ func recursive_backtrack(start_pos: Vector2i):
 
 func get_unvisited_neighbors(pos: Vector2i, visited: Dictionary) -> Array[Vector2i]:
 	var neighbors: Array[Vector2i] = []
-	
 	for direction in DIRECTIONS:
 		var neighbor = pos + direction * 2
 		if is_valid_cell(neighbor) and not visited.has(neighbor):
 			neighbors.append(neighbor)
-	
 	return neighbors
 
 func is_valid_cell(pos: Vector2i) -> bool:
@@ -117,20 +94,15 @@ func create_exits():
 	
 	while exits_created < num_exits and attempts < max_attempts:
 		attempts += 1
-		var side = randi() % 4  # 0=top, 1=right, 2=bottom, 3=left
+		var side = randi() % 4
 		var exit_pos: Vector2i
 		
 		match side:
-			0:  # Top
-				exit_pos = Vector2i(randi_range(1, maze_size * 2 - 1), 0)
-			1:  # Right
-				exit_pos = Vector2i(maze_size * 2, randi_range(1, maze_size * 2 - 1))
-			2:  # Bottom
-				exit_pos = Vector2i(randi_range(1, maze_size * 2 - 1), maze_size * 2)
-			3:  # Left
-				exit_pos = Vector2i(0, randi_range(1, maze_size * 2 - 1))
+			0: exit_pos = Vector2i(randi_range(1, maze_size * 2 - 1), 0)
+			1: exit_pos = Vector2i(maze_size * 2, randi_range(1, maze_size * 2 - 1))
+			2: exit_pos = Vector2i(randi_range(1, maze_size * 2 - 1), maze_size * 2)
+			3: exit_pos = Vector2i(0, randi_range(1, maze_size * 2 - 1))
 		
-		# Check if there's a path cell adjacent to this exit
 		var adjacent_path = false
 		for direction in DIRECTIONS:
 			var adj_pos = exit_pos + direction
@@ -144,54 +116,42 @@ func create_exits():
 
 func add_secret_rooms():
 	var grid_size = maze_size * 2 + 1
-	
 	for y in range(1, grid_size - secret_room_size, 2):
 		for x in range(1, grid_size - secret_room_size, 2):
-			if randf() < secret_room_chance:
-				if can_place_secret_room(Vector2i(x, y)):
-					create_secret_room(Vector2i(x, y))
+			if randf() < secret_room_chance and can_place_secret_room(Vector2i(x, y)):
+				create_secret_room(Vector2i(x, y))
 
 func can_place_secret_room(pos: Vector2i) -> bool:
-	# Check if the area is all walls (we'll replace them with secret room)
+	# Check if area is all walls
 	for dy in range(secret_room_size * 2 + 1):
 		for dx in range(secret_room_size * 2 + 1):
 			var check_pos = pos + Vector2i(dx, dy)
-			if not is_in_bounds(check_pos):
-				return false
-			if maze_grid[check_pos.y][check_pos.x] != CellType.WALL:
+			if not is_in_bounds(check_pos) or maze_grid[check_pos.y][check_pos.x] != CellType.WALL:
 				return false
 	
-	# Check if there's at least one adjacent path cell for access
-	var perimeter_positions = []
+	# Check for adjacent path cells
 	for dy in range(-1, secret_room_size * 2 + 2):
 		for dx in range(-1, secret_room_size * 2 + 2):
 			if dy == -1 or dy == secret_room_size * 2 + 1 or dx == -1 or dx == secret_room_size * 2 + 1:
 				var check_pos = pos + Vector2i(dx, dy)
-				if is_in_bounds(check_pos):
-					perimeter_positions.append(check_pos)
-	
-	for peri_pos in perimeter_positions:
-		if maze_grid[peri_pos.y][peri_pos.x] == CellType.PATH:
-			return true
-	
+				if is_in_bounds(check_pos) and maze_grid[check_pos.y][check_pos.x] == CellType.PATH:
+					return true
 	return false
 
 func create_secret_room(pos: Vector2i):
-	# Create the secret room
+	# Create room
 	for dy in range(secret_room_size * 2 + 1):
 		for dx in range(secret_room_size * 2 + 1):
 			var room_pos = pos + Vector2i(dx, dy)
 			if is_in_bounds(room_pos):
 				maze_grid[room_pos.y][room_pos.x] = CellType.SECRET_ROOM
 	
-	# Add secret entrance
+	# Add entrance
 	var entrance_candidates = []
 	for dy in range(secret_room_size * 2 + 1):
 		for dx in range(secret_room_size * 2 + 1):
 			if dy == 0 or dy == secret_room_size * 2 or dx == 0 or dx == secret_room_size * 2:
 				var entrance_pos = pos + Vector2i(dx, dy)
-				
-				# Check if this position has an adjacent path
 				for direction in DIRECTIONS:
 					var adj_pos = entrance_pos + direction
 					if is_in_bounds(adj_pos) and maze_grid[adj_pos.y][adj_pos.x] == CellType.PATH:
@@ -210,21 +170,12 @@ func build_3d_maze():
 	var mesh_instance = MeshInstance3D.new()
 	var array_mesh = ArrayMesh.new()
 	
-	# Build walls and floor
-	build_walls_and_floor(array_mesh)
+	build_floor_surface(array_mesh)
+	build_walls_surface(array_mesh)
 	
 	mesh_instance.mesh = array_mesh
 	add_child(mesh_instance)
-	
-	# Add proper collision using individual box colliders for walls
 	build_collision_shapes()
-
-func build_walls_and_floor(array_mesh: ArrayMesh):
-	# Build floor first (surface 0)
-	build_floor_surface(array_mesh)
-	
-	# Build walls second (surface 1) 
-	build_walls_surface(array_mesh)
 
 func build_floor_surface(array_mesh: ArrayMesh):
 	var vertices = PackedVector3Array()
@@ -232,12 +183,10 @@ func build_floor_surface(array_mesh: ArrayMesh):
 	var uvs = PackedVector2Array()
 	var indices = PackedInt32Array()
 	
-	# Create one large floor quad for the entire maze
 	var maze_world_size = maze_grid.size() * cell_size
 	var floor_half_size = maze_world_size * 0.5
 	var floor_center = Vector3(floor_half_size - cell_size * 0.5, 0, floor_half_size - cell_size * 0.5)
 	
-	# Add one large floor quad
 	vertices.append(Vector3(floor_center.x - floor_half_size, 0, floor_center.z - floor_half_size))
 	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z - floor_half_size))
 	vertices.append(Vector3(floor_center.x + floor_half_size, 0, floor_center.z + floor_half_size))
@@ -246,21 +195,10 @@ func build_floor_surface(array_mesh: ArrayMesh):
 	for i in range(4):
 		normals.append(Vector3.UP)
 	
-	var uv_scale = maze_grid.size()  # Scale UVs based on maze size
-	uvs.append(Vector2(0, 0))
-	uvs.append(Vector2(uv_scale, 0))
-	uvs.append(Vector2(uv_scale, uv_scale))
-	uvs.append(Vector2(0, uv_scale))
+	var uv_scale = maze_grid.size()
+	uvs.append_array([Vector2(0, 0), Vector2(uv_scale, 0), Vector2(uv_scale, uv_scale), Vector2(0, uv_scale)])
+	indices.append_array([0, 1, 2, 0, 2, 3])
 	
-	# Floor indices
-	indices.append(0)
-	indices.append(1)
-	indices.append(2)
-	indices.append(0)
-	indices.append(2)
-	indices.append(3)
-	
-	# Create floor surface
 	var arrays = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -269,8 +207,6 @@ func build_floor_surface(array_mesh: ArrayMesh):
 	arrays[Mesh.ARRAY_INDEX] = indices
 	
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	
-	# Apply floor material
 	if floor_material:
 		array_mesh.surface_set_material(0, floor_material)
 
@@ -279,21 +215,15 @@ func build_walls_surface(array_mesh: ArrayMesh):
 	var normals = PackedVector3Array()
 	var uvs = PackedVector2Array()
 	var indices = PackedInt32Array()
-	
 	var vertex_count = 0
 	
-	# Add walls
 	for y in range(maze_grid.size()):
 		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			var world_pos = Vector3(x * cell_size, 0, y * cell_size)
-			
-			# Add walls for wall cells
-			if cell_type == CellType.WALL:
+			if maze_grid[y][x] == CellType.WALL:
+				var world_pos = Vector3(x * cell_size, 0, y * cell_size)
 				add_wall_cube(vertices, normals, uvs, indices, world_pos, vertex_count)
-				vertex_count += 24  # 6 faces * 4 vertices
+				vertex_count += 24
 
-	# Create walls surface
 	var arrays = []
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
@@ -302,56 +232,16 @@ func build_walls_surface(array_mesh: ArrayMesh):
 	arrays[Mesh.ARRAY_INDEX] = indices
 	
 	array_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	
-	# Apply wall material
 	if wall_material:
 		array_mesh.surface_set_material(1, wall_material)
-
-func add_floor_quad(vertices: PackedVector3Array, normals: PackedVector3Array, 
-				   uvs: PackedVector2Array, indices: PackedInt32Array, 
-				   pos: Vector3, vertex_offset: int):
-	
-	var half_size = cell_size * 0.5
-	
-	# Floor vertices (Y = 0) - always full cell size for seamless floors
-	vertices.append(Vector3(pos.x - half_size, 0, pos.z - half_size))
-	vertices.append(Vector3(pos.x + half_size, 0, pos.z - half_size))
-	vertices.append(Vector3(pos.x + half_size, 0, pos.z + half_size))
-	vertices.append(Vector3(pos.x - half_size, 0, pos.z + half_size))
-	
-	# Normals (pointing up)
-	for i in range(4):
-		normals.append(Vector3.UP)
-	
-	# UVs
-	uvs.append(Vector2(0, 0))
-	uvs.append(Vector2(1, 0))
-	uvs.append(Vector2(1, 1))
-	uvs.append(Vector2(0, 1))
-	
-	# Indices (two triangles)
-	indices.append(vertex_offset + 0)
-	indices.append(vertex_offset + 1)
-	indices.append(vertex_offset + 2)
-	
-	indices.append(vertex_offset + 0)
-	indices.append(vertex_offset + 2)
-	indices.append(vertex_offset + 3)
 
 func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 				  uvs: PackedVector2Array, indices: PackedInt32Array,
 				  pos: Vector3, vertex_offset: int):
 	
-	# For wall connectivity, use full cell size but adjust visual thickness
-	var visual_half_size = (cell_size * wall_thickness) * 0.5
-	var collision_half_size = cell_size * 0.5  # Full size for connectivity
-	
-	# Use collision size to ensure walls connect, but this creates solid blocks
-	# For better visual appearance with thin walls, we'll use full cell size
-	var half_size = collision_half_size  # This ensures walls connect properly
+	var half_size = cell_size * 0.5
 	var height = wall_height
 	
-	# Define cube vertices
 	var cube_vertices = [
 		# Bottom face
 		Vector3(pos.x - half_size, 0, pos.z - half_size),
@@ -365,20 +255,13 @@ func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 		Vector3(pos.x - half_size, height, pos.z + half_size),
 	]
 	
-	# Define face data with CORRECTED winding order: [vertex indices, normal, uv coordinates]
 	var faces = [
-		# Bottom (Y-) - Fixed winding
-		[[3, 2, 1, 0], Vector3.DOWN, [[0,0], [1,0], [1,1], [0,1]]],
-		# Top (Y+) - Fixed winding  
-		[[4, 5, 6, 7], Vector3.UP, [[0,0], [1,0], [1,1], [0,1]]],
-		# Front (Z-) - Fixed winding
-		[[0, 1, 5, 4], Vector3.FORWARD, [[0,0], [1,0], [1,1], [0,1]]],
-		# Back (Z+) - Fixed winding
-		[[2, 3, 7, 6], Vector3.BACK, [[0,0], [1,0], [1,1], [0,1]]],
-		# Left (X-) - Fixed winding
-		[[3, 0, 4, 7], Vector3.LEFT, [[0,0], [1,0], [1,1], [0,1]]],
-		# Right (X+) - Fixed winding
-		[[1, 2, 6, 5], Vector3.RIGHT, [[0,0], [1,0], [1,1], [0,1]]]
+		[[3, 2, 1, 0], Vector3.DOWN],
+		[[4, 5, 6, 7], Vector3.UP],
+		[[0, 1, 5, 4], Vector3.FORWARD],
+		[[2, 3, 7, 6], Vector3.BACK],
+		[[3, 0, 4, 7], Vector3.LEFT],
+		[[1, 2, 6, 5], Vector3.RIGHT]
 	]
 	
 	var face_vertex_offset = vertex_offset
@@ -386,203 +269,491 @@ func add_wall_cube(vertices: PackedVector3Array, normals: PackedVector3Array,
 	for face_data in faces:
 		var face_indices = face_data[0]
 		var normal = face_data[1]
-		var face_uvs = face_data[2]
 		
-		# Add vertices for this face
 		for i in range(4):
 			vertices.append(cube_vertices[face_indices[i]])
 			normals.append(normal)
-			uvs.append(Vector2(face_uvs[i][0], face_uvs[i][1]))
+			uvs.append(Vector2(i % 2, i / 2))
 		
-		# Add indices for two triangles (counter-clockwise winding)
-		indices.append(face_vertex_offset + 0)
-		indices.append(face_vertex_offset + 1)
-		indices.append(face_vertex_offset + 2)
-		
-		indices.append(face_vertex_offset + 0)
-		indices.append(face_vertex_offset + 2)
-		indices.append(face_vertex_offset + 3)
-		
+		indices.append_array([
+			face_vertex_offset + 0, face_vertex_offset + 1, face_vertex_offset + 2,
+			face_vertex_offset + 0, face_vertex_offset + 2, face_vertex_offset + 3
+		])
 		face_vertex_offset += 4
 
 func clear_maze():
-	# Remove all children (previous maze geometry)
 	for child in get_children():
 		child.queue_free()
 
-func get_secret_room_positions() -> Array[Vector2i]:
-	return secret_rooms
+# NAVIGATION MESH SYSTEM
+func bake_navigation_mesh():
+	print("Baking navigation mesh...")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	var nav_region = get_or_create_navigation_region()
+	var nav_mesh = nav_region.navigation_mesh
+	nav_mesh.clear()
+	
+	# FORCE manual creation to avoid auto-baking over entire floor
+	print("Skipping auto-baking, creating manual mesh only...")
+	create_manual_navigation_mesh(nav_region)
+	
+	# Force enable the navigation region
+	nav_region.enabled = true
 
-func get_maze_data() -> Array[Array]:
-	return maze_grid
+func get_or_create_navigation_region() -> NavigationRegion3D:
+	var nav_region = find_child("NavigationRegion3D", false, false) as NavigationRegion3D
+	if not nav_region:
+		nav_region = NavigationRegion3D.new()
+		nav_region.name = "NavigationRegion3D"
+		nav_region.navigation_mesh = NavigationMesh.new()
+		add_child(nav_region)
+	return nav_region
 
-# Get a safe spawn position for the player
+func create_manual_navigation_mesh(nav_region: NavigationRegion3D):
+	print("Creating robust manual navigation mesh...")
+	var nav_mesh = nav_region.navigation_mesh
+	nav_mesh.clear()
+	
+	var vertices = PackedVector3Array()
+	var polygons = []
+	
+	# Create navigation using corridor mapping instead of individual cells
+	create_corridor_based_navigation(vertices, polygons)
+	
+	if vertices.size() == 0:
+		print("ERROR: No navigation areas created! Creating emergency navigation...")
+		create_emergency_navigation(vertices, polygons)
+	
+	nav_mesh.set_vertices(vertices)
+	for polygon in polygons:
+		nav_mesh.add_polygon(polygon)
+	
+	print("Robust navigation mesh created:")
+	print("- Vertices: ", vertices.size())
+	print("- Polygons: ", polygons.size())
+	
+	# Force update
+	nav_region.navigation_mesh = nav_mesh
+	nav_region.enabled = false
+	await get_tree().process_frame
+	nav_region.enabled = true
+	await get_tree().process_frame
+	
+	await get_tree().create_timer(0.5).timeout
+	validate_navigation_mesh(nav_mesh)
+
+func create_corridor_based_navigation(vertices: PackedVector3Array, polygons: Array):
+	"""Create navigation mesh based on corridor mapping for better pathfinding around corners"""
+	
+	print("Creating corridor-based navigation...")
+	
+	# Create a larger navigation area for each walkable cell with generous overlap
+	var created_areas = 0
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			var cell_type = maze_grid[y][x]
+			
+			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+				var world_pos = Vector3(x * cell_size, 0.05, y * cell_size)
+				
+				# Create LARGE overlapping navigation areas for better pathfinding
+				var nav_size = cell_size * 0.8  # Much larger navigation areas
+				var half_size = nav_size * 0.5
+				
+				var start_idx = vertices.size()
+				
+				vertices.append_array([
+					world_pos + Vector3(-half_size, 0, -half_size),
+					world_pos + Vector3(half_size, 0, -half_size),
+					world_pos + Vector3(half_size, 0, half_size),
+					world_pos + Vector3(-half_size, 0, half_size)
+				])
+				
+				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+				created_areas += 1
+				
+				# Create additional corner navigation helpers
+				create_corner_navigation_helpers(Vector2i(x, y), world_pos, vertices, polygons)
+	
+	print("Created ", created_areas, " navigation areas with corner helpers")
+
+func create_corner_navigation_helpers(grid_pos: Vector2i, world_pos: Vector3, vertices: PackedVector3Array, polygons: Array):
+	"""Create additional navigation areas at corners to help pathfinding"""
+	
+	# Check if this cell is at a corner (has paths in perpendicular directions)
+	var has_north = is_walkable_cell(grid_pos + Vector2i(0, -1))
+	var has_south = is_walkable_cell(grid_pos + Vector2i(0, 1))
+	var has_east = is_walkable_cell(grid_pos + Vector2i(1, 0))
+	var has_west = is_walkable_cell(grid_pos + Vector2i(-1, 0))
+	
+	# Create corner helpers for L-shaped intersections
+	var corner_positions = []
+	
+	if has_north and has_east:  # Northeast corner
+		corner_positions.append(world_pos + Vector3(cell_size * 0.3, 0, -cell_size * 0.3))
+	if has_north and has_west:  # Northwest corner
+		corner_positions.append(world_pos + Vector3(-cell_size * 0.3, 0, -cell_size * 0.3))
+	if has_south and has_east:  # Southeast corner
+		corner_positions.append(world_pos + Vector3(cell_size * 0.3, 0, cell_size * 0.3))
+	if has_south and has_west:  # Southwest corner
+		corner_positions.append(world_pos + Vector3(-cell_size * 0.3, 0, cell_size * 0.3))
+	
+	# Create small navigation quads at corner positions
+	for corner_pos in corner_positions:
+		var corner_size = cell_size * 0.4
+		var half_size = corner_size * 0.5
+		
+		var start_idx = vertices.size()
+		vertices.append_array([
+			corner_pos + Vector3(-half_size, 0, -half_size),
+			corner_pos + Vector3(half_size, 0, -half_size),
+			corner_pos + Vector3(half_size, 0, half_size),
+			corner_pos + Vector3(-half_size, 0, half_size)
+		])
+		
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func is_walkable_cell(grid_pos: Vector2i) -> bool:
+	"""Check if a grid position contains a walkable cell"""
+	if not is_in_bounds(grid_pos):
+		return false
+	
+	var cell_type = maze_grid[grid_pos.y][grid_pos.x]
+	return cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM
+
+func find_connected_walkable_regions() -> Array:
+	"""Find connected regions of walkable cells using flood fill"""
+	var processed_cells = {}
+	var regions = []
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			var cell_pos = Vector2i(x, y)
+			var cell_type = maze_grid[y][x]
+			
+			if (cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM) and not processed_cells.has(cell_pos):
+				var region = flood_fill_walkable_region(cell_pos, processed_cells)
+				if region.size() > 0:
+					regions.append(region)
+	
+	return regions
+
+func flood_fill_walkable_region(start_pos: Vector2i, processed_cells: Dictionary) -> Array:
+	"""Flood fill to find all connected walkable cells"""
+	var region = []
+	var cells_to_check = [start_pos]
+	var region_cells = {}
+	
+	while not cells_to_check.is_empty():
+		var current = cells_to_check.pop_back()
+		
+		if processed_cells.has(current) or region_cells.has(current):
+			continue
+		
+		if not is_in_bounds(current):
+			continue
+		
+		var cell_type = maze_grid[current.y][current.x]
+		if not (cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM):
+			continue
+		
+		region_cells[current] = true
+		region.append(current)
+		processed_cells[current] = true
+		
+		# Add all 4 adjacent cells (not diagonal to avoid leaking through corners)
+		var neighbors = [
+			current + Vector2i(0, 1),   # North
+			current + Vector2i(1, 0),   # East
+			current + Vector2i(0, -1),  # South
+			current + Vector2i(-1, 0)   # West
+		]
+		
+		for neighbor in neighbors:
+			if not processed_cells.has(neighbor) and not region_cells.has(neighbor):
+				cells_to_check.append(neighbor)
+	
+	return region
+
+func create_seamless_region_navigation(region: Array, vertices: PackedVector3Array, polygons: Array):
+	"""Create a seamless navigation area for a connected region with overlapping quads"""
+	if region.is_empty():
+		return
+	
+	print("Creating seamless navigation for region with ", region.size(), " cells:")
+	
+	var navigation_created = false
+	
+	for cell_pos in region:
+		var cell_type = maze_grid[cell_pos.y][cell_pos.x]
+		
+		# Only create navigation for actual walkable cells
+		if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+			var world_pos = Vector3(cell_pos.x * cell_size, 0.05, cell_pos.y * cell_size)
+			
+			# Create OVERLAPPING navigation quads to eliminate gaps
+			var base_size = cell_size * 0.4  # Base size with wall clearance
+			var overlap = 0.2  # Additional overlap to connect tiles
+			var half_size = base_size + overlap
+			
+			var start_idx = vertices.size()
+			
+			vertices.append_array([
+				world_pos + Vector3(-half_size, 0, -half_size),
+				world_pos + Vector3(half_size, 0, -half_size),
+				world_pos + Vector3(half_size, 0, half_size),
+				world_pos + Vector3(-half_size, 0, half_size)
+			])
+			
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+			navigation_created = true
+	
+	# ADDITIONAL: Create bridge connections between adjacent cells
+	create_navigation_bridges_for_region(region, vertices, polygons)
+	
+	if not navigation_created:
+		print("  No navigation created for this region")
+	else:
+		print("  Navigation region completed with overlapping tiles")
+
+func create_navigation_bridges_for_region(region: Array, vertices: PackedVector3Array, polygons: Array):
+	"""Create bridge navigation areas between adjacent cells in a region"""
+	
+	var bridge_count = 0
+	
+	for cell_pos in region:
+		var cell_type = maze_grid[cell_pos.y][cell_pos.x]
+		
+		if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+			# Check adjacent cells and create bridges
+			var directions = [
+				Vector2i(1, 0),   # Right
+				Vector2i(0, 1),   # Down
+			]
+			
+			for direction in directions:
+				var neighbor_pos = cell_pos + direction
+				
+				# Check if neighbor is also in the region and walkable
+				if region.has(neighbor_pos):
+					var neighbor_type = maze_grid[neighbor_pos.y][neighbor_pos.x]
+					if neighbor_type == CellType.PATH or neighbor_type == CellType.EXIT or neighbor_type == CellType.SECRET_ROOM:
+						# Create a bridge between these cells
+						create_bridge_between_cells(cell_pos, neighbor_pos, vertices, polygons)
+						bridge_count += 1
+	
+	print("  Created ", bridge_count, " navigation bridges")
+
+func create_bridge_between_cells(cell1: Vector2i, cell2: Vector2i, vertices: PackedVector3Array, polygons: Array):
+	"""Create a bridge navigation area between two adjacent cells"""
+	
+	var world_pos1 = Vector3(cell1.x * cell_size, 0.05, cell1.y * cell_size)
+	var world_pos2 = Vector3(cell2.x * cell_size, 0.05, cell2.y * cell_size)
+	
+	# Create a bridge quad that spans between the two cell centers
+	var center = (world_pos1 + world_pos2) * 0.5
+	var direction = (world_pos2 - world_pos1).normalized()
+	var perpendicular = Vector3(-direction.z, 0, direction.x)
+	
+	# Bridge dimensions
+	var length_half = cell_size * 0.6  # Length of bridge
+	var width_half = cell_size * 0.3   # Width of bridge
+	
+	var start_idx = vertices.size()
+	vertices.append_array([
+		center + (-direction * length_half) + (-perpendicular * width_half),
+		center + (-direction * length_half) + (perpendicular * width_half),
+		center + (direction * length_half) + (perpendicular * width_half),
+		center + (direction * length_half) + (-perpendicular * width_half)
+	])
+	
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func validate_navigation_mesh(nav_mesh: NavigationMesh) -> bool:
+	"""Validate navigation mesh and print detailed info"""
+	var vertices = nav_mesh.get_vertices()
+	if vertices.size() == 0:
+		print("ERROR: Navigation mesh has no vertices!")
+		return false
+	
+	# Check bounds
+	var min_pos = vertices[0]
+	var max_pos = vertices[0]
+	for vertex in vertices:
+		min_pos.x = min(min_pos.x, vertex.x)
+		min_pos.z = min(min_pos.z, vertex.z)
+		max_pos.x = max(max_pos.x, vertex.x)
+		max_pos.z = max(max_pos.z, vertex.z)
+	
+	print("Navigation mesh bounds: ", min_pos, " to ", max_pos)
+	print("Navigation mesh size: ", max_pos - min_pos)
+	
+	# Test a few known positions
+	var test_positions = [
+		grid_to_world(Vector2i(1, 1)),
+		grid_to_world(Vector2i(3, 3)),
+		grid_to_world(Vector2i(5, 5))
+	]
+	
+	var nav_region = get_navigation_region()
+	if nav_region:
+		var nav_map = nav_region.get_navigation_map()
+		if nav_map.is_valid():
+			print("Testing navigation mesh at key positions:")
+			for i in range(test_positions.size()):
+				var pos = test_positions[i]
+				var closest = NavigationServer3D.map_get_closest_point(nav_map, pos)
+				var distance = pos.distance_to(closest)
+				print("  Test ", i, ": ", pos, " -> ", closest, " (dist: ", distance, ")")
+			return true
+		else:
+			print("Navigation map is not valid!")
+			return false
+	else:
+		print("No navigation region found!")
+		return false
+
+func create_emergency_navigation(vertices: PackedVector3Array, polygons: Array):
+	print("Creating emergency navigation mesh at multiple locations...")
+	
+	# Create multiple emergency navigation areas
+	var emergency_positions = [
+		Vector2i(1, 1),  # Start position
+		Vector2i(3, 3),  # Nearby
+		Vector2i(5, 5),  # Further away
+	]
+	
+	for grid_pos in emergency_positions:
+		if is_in_bounds(grid_pos):
+			var spawn_world = grid_to_world(grid_pos)
+			var safe_size = cell_size * 0.8
+			var half_size = safe_size * 0.5
+			
+			var start_idx = vertices.size()
+			vertices.append_array([
+				spawn_world + Vector3(-half_size, 0.05, -half_size),
+				spawn_world + Vector3(half_size, 0.05, -half_size),
+				spawn_world + Vector3(half_size, 0.05, half_size),
+				spawn_world + Vector3(-half_size, 0.05, half_size)
+			])
+			
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+	
+	print("Emergency navigation created with ", vertices.size(), " vertices at ", emergency_positions.size(), " locations")
+
+func build_collision_shapes():
+	var static_body = StaticBody3D.new()
+	static_body.name = "MazeCollision"
+	static_body.collision_layer = 1
+	static_body.collision_mask = 0
+	
+	var wall_count = 0
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			if maze_grid[y][x] == CellType.WALL:
+				var collision_shape = CollisionShape3D.new()
+				var box_shape = BoxShape3D.new()
+				box_shape.size = Vector3(cell_size, wall_height, cell_size)
+				collision_shape.shape = box_shape
+				collision_shape.position = Vector3(x * cell_size, wall_height * 0.5, y * cell_size)
+				static_body.add_child(collision_shape)
+				wall_count += 1
+	
+	# FIXED: Floor collision positioned so top surface is at Y = 0
+	var floor_collision = CollisionShape3D.new()
+	var floor_shape = BoxShape3D.new()
+	var maze_world_size = maze_grid.size() * cell_size
+	
+	# Floor thickness and positioning
+	var floor_thickness = 2.0
+	floor_shape.size = Vector3(maze_world_size + cell_size, floor_thickness, maze_world_size + cell_size)
+	floor_collision.shape = floor_shape
+	# Position floor so the TOP surface is at Y = 0
+	floor_collision.position = Vector3(
+		maze_world_size * 0.5 - cell_size * 0.5, 
+		-floor_thickness * 0.5,  # Half the thickness below Y = 0
+		maze_world_size * 0.5 - cell_size * 0.5
+	)
+	floor_collision.name = "FloorCollision"
+	static_body.add_child(floor_collision)
+	
+	add_child(static_body)
+	print("Collision created: ", wall_count, " walls + floor")
+	print("Floor size: ", floor_shape.size, " at position: ", floor_collision.position)
+	print("Floor top surface should be at Y = 0")
+
+# SPAWN POSITION UTILITIES
 func get_player_spawn_position() -> Vector3:
-	# Option 1: Always spawn at the starting position (guaranteed safe)
-	var start_grid_pos = Vector2i(1, 1)  # This is where maze generation starts
-	return grid_to_world(start_grid_pos) + Vector3(0, 1, 0)  # Add Y offset for player height
+	# FIXED: Use the guaranteed path cell at (1,1) where maze generation starts
+	var spawn_grid_pos = Vector2i(1, 1)
+	
+	# Double-check this is a path cell
+	if is_in_bounds(spawn_grid_pos) and maze_grid[spawn_grid_pos.y][spawn_grid_pos.x] == CellType.PATH:
+		var spawn_pos = grid_to_world(spawn_grid_pos) + Vector3(0, 3.0, 0)
+		print("Player spawn position calculated: ", spawn_pos, " (grid: ", spawn_grid_pos, ")")
+		return spawn_pos
+	else:
+		print("ERROR: Default spawn grid position is not a path!")
+		# Find first available path
+		var first_path = find_first_path_cell()
+		var spawn_pos = grid_to_world(first_path) + Vector3(0, 3.0, 0)
+		print("Using first path cell: ", spawn_pos, " (grid: ", first_path, ")")
+		return spawn_pos
 
-# Get multiple possible spawn positions
 func get_possible_spawn_positions() -> Array[Vector3]:
 	var spawn_positions: Array[Vector3] = []
+	print("Searching for possible spawn positions in maze...")
 	
-	# Find all path cells that could be good spawn points
-	for y in range(1, maze_grid.size() - 1, 2):  # Only check odd positions (path cells)
+	for y in range(1, maze_grid.size() - 1, 2):
 		for x in range(1, maze_grid[y].size() - 1, 2):
 			if maze_grid[y][x] == CellType.PATH:
-				# Check if it's not too close to exits (optional)
 				if not is_near_exit(Vector2i(x, y), 3):
-					var world_pos = grid_to_world(Vector2i(x, y)) + Vector3(0, 1, 0)
+					# Spawn above floor so entities fall and land properly
+					var world_pos = grid_to_world(Vector2i(x, y)) + Vector3(0, 3.0, 0)
 					spawn_positions.append(world_pos)
 	
+	print("Found ", spawn_positions.size(), " possible spawn positions")
 	return spawn_positions
 
-# Get a random spawn position (excluding near exits)
-func get_random_spawn_position() -> Vector3:
-	var possible_positions = get_possible_spawn_positions()
-	if possible_positions.size() > 0:
-		return possible_positions[randi() % possible_positions.size()]
-	else:
-		# Fallback to guaranteed safe position
-		return get_player_spawn_position()
 
-# Get spawn position farthest from all exits
-func get_spawn_position_far_from_exits() -> Vector3:
-	var exit_positions: Array[Vector2i] = []
-	
-	# Find all exit positions
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			if maze_grid[y][x] == CellType.EXIT:
-				exit_positions.append(Vector2i(x, y))
-	
-	var best_position = Vector2i(1, 1)  # Default safe position
-	var max_min_distance = 0.0
-	
-	# Find path cell with maximum distance to nearest exit
-	for y in range(1, maze_grid.size() - 1, 2):
-		for x in range(1, maze_grid[y].size() - 1, 2):
-			if maze_grid[y][x] == CellType.PATH:
-				var current_pos = Vector2i(x, y)
-				var min_distance_to_exit = INF
-				
-				# Find distance to nearest exit
-				for exit_pos in exit_positions:
-					var distance = current_pos.distance_to(exit_pos)
-					min_distance_to_exit = min(min_distance_to_exit, distance)
-				
-				# Update best position if this is farther from exits
-				if min_distance_to_exit > max_min_distance:
-					max_min_distance = min_distance_to_exit
-					best_position = current_pos
-	
-	return grid_to_world(best_position) + Vector3(0, 1, 0)
-
-# Advanced enemy spawning utilities
-func get_dead_end_positions() -> Array[Vector2i]:
-	var dead_ends: Array[Vector2i] = []
-	
-	# Find cells that are paths but only have one neighbor
-	for y in range(1, maze_grid.size() - 1, 2):
-		for x in range(1, maze_grid[y].size() - 1, 2):
-			if maze_grid[y][x] == CellType.PATH:
-				var neighbor_count = 0
-				
-				# Check all 4 directions for path connections
-				for direction in DIRECTIONS:
-					var neighbor_pos = Vector2i(x, y) + direction
-					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
-						neighbor_count += 1
-				
-				# Dead end = only 1 connection
-				if neighbor_count == 1:
-					dead_ends.append(Vector2i(x, y))
-	
-	return dead_ends
-
-func get_intersection_positions() -> Array[Vector2i]:
-	var intersections: Array[Vector2i] = []
-	
-	# Find cells that are paths with 3+ neighbors
-	for y in range(1, maze_grid.size() - 1, 2):
-		for x in range(1, maze_grid[y].size() - 1, 2):
-			if maze_grid[y][x] == CellType.PATH:
-				var neighbor_count = 0
-				
-				# Check all 4 directions for path connections
-				for direction in DIRECTIONS:
-					var neighbor_pos = Vector2i(x, y) + direction
-					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
-						neighbor_count += 1
-				
-				# Intersection = 3+ connections
-				if neighbor_count >= 3:
-					intersections.append(Vector2i(x, y))
-	
-	return intersections
-
-func get_positions_near_exits(radius: int = 3) -> Array[Vector2i]:
-	var near_exit_positions: Array[Vector2i] = []
-	var exit_positions: Array[Vector2i] = []
-	
-	# Find all exits first
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			if maze_grid[y][x] == CellType.EXIT:
-				exit_positions.append(Vector2i(x, y))
-	
-	# Find path positions near exits
-	for y in range(1, maze_grid.size() - 1, 2):
-		for x in range(1, maze_grid[y].size() - 1, 2):
-			if maze_grid[y][x] == CellType.PATH:
-				var current_pos = Vector2i(x, y)
-				
-				# Check if within radius of any exit
-				for exit_pos in exit_positions:
-					if current_pos.distance_to(exit_pos) <= radius:
-						near_exit_positions.append(current_pos)
-						break
-	
-	return near_exit_positions
-
-func get_corridor_positions() -> Array[Vector2i]:
-	var corridors: Array[Vector2i] = []
-	
-	# Find cells that are paths with exactly 2 neighbors (corridor pieces)
-	for y in range(1, maze_grid.size() - 1, 2):
-		for x in range(1, maze_grid[y].size() - 1, 2):
-			if maze_grid[y][x] == CellType.PATH:
-				var neighbor_count = 0
-				
-				# Check all 4 directions for path connections
-				for direction in DIRECTIONS:
-					var neighbor_pos = Vector2i(x, y) + direction
-					if is_in_bounds(neighbor_pos) and maze_grid[neighbor_pos.y][neighbor_pos.x] == CellType.PATH:
-						neighbor_count += 1
-				
-				# Corridor = exactly 2 connections
-				if neighbor_count == 2:
-					corridors.append(Vector2i(x, y))
-	
-	return corridors
-
-# Get positions far from player spawn
 func get_positions_far_from_spawn(min_distance: float = 10.0) -> Array[Vector2i]:
-	var spawn_grid_pos = Vector2i(1, 1)  # Default spawn position
+	var spawn_grid_pos = Vector2i(1, 1)
 	var far_positions: Array[Vector2i] = []
+	print("Searching for positions far from spawn (min distance: ", min_distance, ")...")
 	
 	for y in range(1, maze_grid.size() - 1, 2):
 		for x in range(1, maze_grid[y].size() - 1, 2):
 			if maze_grid[y][x] == CellType.PATH:
 				var current_pos = Vector2i(x, y)
 				var distance = current_pos.distance_to(spawn_grid_pos)
-				
 				if distance >= min_distance:
 					far_positions.append(current_pos)
 	
+	print("Found ", far_positions.size(), " positions far from spawn")
 	return far_positions
 
-# Helper function to check if position is near an exit
+func find_first_path_cell() -> Vector2i:
+	"""Find the first path cell in the maze as emergency fallback"""
+	print("Searching for first path cell...")
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			if maze_grid[y][x] == CellType.PATH:
+				print("Found first path cell at: ", Vector2i(x, y))
+				return Vector2i(x, y)
+	
+	print("ERROR: No path cells found in maze!")
+	return Vector2i(1, 1)  # Fallback
+
 func is_near_exit(pos: Vector2i, radius: int) -> bool:
 	for dy in range(-radius, radius + 1):
 		for dx in range(-radius, radius + 1):
@@ -591,557 +762,195 @@ func is_near_exit(pos: Vector2i, radius: int) -> bool:
 				return true
 	return false
 
-# Simplified manual navigation mesh creation
-# Replace the create_simple_navigation_mesh function with this improved version
-
-func create_simple_navigation_mesh(nav_region: NavigationRegion3D):
-	print("Creating improved navigation mesh manually...")
+func get_guaranteed_safe_spawn_position() -> Vector3:
+	await get_tree().physics_frame
 	
-	var nav_mesh = nav_region.navigation_mesh
-	nav_mesh.clear()
+	# FIXED: Ensure we spawn in the actual path cell at (1,1)
+	# The maze generation starts at grid position (1,1) which is guaranteed to be a path
+	var spawn_grid_pos = Vector2i(1, 1)
 	
-	# Find all connected walkable areas
-	var walkable_cells = []
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-				walkable_cells.append(Vector2i(x, y))
+	# Verify this is actually a path cell
+	if maze_grid[spawn_grid_pos.y][spawn_grid_pos.x] != CellType.PATH:
+		print("ERROR: Spawn position is not a path! Cell type: ", maze_grid[spawn_grid_pos.y][spawn_grid_pos.x])
+		# Find the first available path cell
+		spawn_grid_pos = find_first_path_cell()
 	
-	if walkable_cells.is_empty():
-		print("No walkable cells found!")
-		return
+	var base_spawn = grid_to_world(spawn_grid_pos) + Vector3(0, 3.0, 0)
+	print("Base spawn position: ", base_spawn, " (grid: ", spawn_grid_pos, ")")
 	
-	# Create larger connected navigation polygons instead of individual tiles
-	var processed_cells = {}
-	var vertices = PackedVector3Array()
-	var polygons = []
-	
-	for cell in walkable_cells:
-		if processed_cells.has(cell):
-			continue
-			
-		# Find rectangular regions of connected walkable cells
-		var region = find_rectangular_region(cell, walkable_cells, processed_cells)
-		if region.size() > 0:
-			create_navigation_polygon_for_region(region, vertices, polygons)
-	
-	# Apply the navigation mesh
-	nav_mesh.set_vertices(vertices)
-	for polygon in polygons:
-		nav_mesh.add_polygon(polygon)
-	
-	print("Improved navigation mesh created:")
-	print("- Vertices: ", vertices.size())
-	print("- Polygons: ", polygons.size())
-
-func find_rectangular_region(start_cell: Vector2i, walkable_cells: Array, processed_cells: Dictionary) -> Array[Vector2i]:
-	var region = []
-	var cells_to_check = [start_cell]
-	var region_cells = {}
-	
-	# Simple flood fill to find connected walkable area
-	while not cells_to_check.is_empty():
-		var current_cell = cells_to_check.pop_back()
-		
-		if processed_cells.has(current_cell) or region_cells.has(current_cell):
-			continue
-			
-		if not walkable_cells.has(current_cell):
-			continue
-			
-		region_cells[current_cell] = true
-		region.append(current_cell)
-		processed_cells[current_cell] = true
-		
-		# Add neighboring cells
-		for direction in DIRECTIONS:
-			var neighbor = current_cell + direction
-			if not processed_cells.has(neighbor) and not region_cells.has(neighbor):
-				cells_to_check.append(neighbor)
-	
-	return region
-
-func create_navigation_polygon_for_region(region: Array[Vector2i], vertices: PackedVector3Array, polygons: Array):
-	if region.is_empty():
-		return
-	
-	# Find bounds of the region
-	var min_x = region[0].x
-	var max_x = region[0].x
-	var min_y = region[0].y
-	var max_y = region[0].y
-	
-	for cell in region:
-		min_x = min(min_x, cell.x)
-		max_x = max(max_x, cell.x)
-		min_y = min(min_y, cell.y)
-		max_y = max(max_y, cell.y)
-	
-	# Create a single large polygon for the entire connected region
-	# Use full cell_size to ensure no gaps
-	var world_min = Vector3(min_x * cell_size - cell_size * 0.5, 0.1, min_y * cell_size - cell_size * 0.5)
-	var world_max = Vector3(max_x * cell_size + cell_size * 0.5, 0.1, max_y * cell_size + cell_size * 0.5)
-	
-	var start_idx = vertices.size()
-	
-	# Add vertices for the bounding rectangle (slightly overlap to prevent gaps)
-	var overlap = 0.1  # Small overlap to ensure connection
-	vertices.append(Vector3(world_min.x - overlap, 0.1, world_min.z - overlap))  # Bottom-left
-	vertices.append(Vector3(world_max.x + overlap, 0.1, world_min.z - overlap))  # Bottom-right
-	vertices.append(Vector3(world_max.x + overlap, 0.1, world_max.z + overlap))  # Top-right
-	vertices.append(Vector3(world_min.x - overlap, 0.1, world_max.z + overlap))  # Top-left
-	
-	# Create two triangles for the rectangle
-	var poly1 = PackedInt32Array([start_idx, start_idx + 1, start_idx + 2])
-	var poly2 = PackedInt32Array([start_idx, start_idx + 2, start_idx + 3])
-	
-	polygons.append(poly1)
-	polygons.append(poly2)
-
-# Alternative approach: Create one massive navigation polygon for all walkable areas
-func create_unified_navigation_mesh(nav_region: NavigationRegion3D):
-	print("Creating unified navigation mesh...")
-	
-	var nav_mesh = nav_region.navigation_mesh
-	nav_mesh.clear()
-	
-	var vertices = PackedVector3Array()
-	var polygons = []
-	
-	# Find all walkable cells
-	var walkable_cells = []
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-				walkable_cells.append(Vector2i(x, y))
-	
-	# Create individual quads for each walkable cell with slight overlap
-	for cell in walkable_cells:
-		var world_pos = Vector3(cell.x * cell_size, 0.1, cell.y * cell_size)
-		var half_size = cell_size * 0.51  # Slightly larger than 0.5 to ensure overlap
-		
-		var start_idx = vertices.size()
-		vertices.append(world_pos + Vector3(-half_size, 0, -half_size))
-		vertices.append(world_pos + Vector3(half_size, 0, -half_size))
-		vertices.append(world_pos + Vector3(half_size, 0, half_size))
-		vertices.append(world_pos + Vector3(-half_size, 0, half_size))
-		
-		# Create two triangles for the quad
-		var poly1 = PackedInt32Array([start_idx, start_idx + 1, start_idx + 2])
-		var poly2 = PackedInt32Array([start_idx, start_idx + 2, start_idx + 3])
-		
-		polygons.append(poly1)
-		polygons.append(poly2)
-	
-	nav_mesh.set_vertices(vertices)
-	for polygon in polygons:
-		nav_mesh.add_polygon(polygon)
-	
-	print("Unified navigation mesh created:")
-	print("- Vertices: ", vertices.size())
-	print("- Polygons: ", polygons.size())
-
-# Updated bake_navigation_mesh function with better fallback
-# Replace your bake_navigation_mesh function with this fixed version
-# Updated navigation mesh settings that work better with agents
-func bake_navigation_mesh():
-	print("Starting navigation mesh baking...")
-	
-	# Wait for all geometry and collision to be properly setup
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	var nav_region = find_child("NavigationRegion3D", false, false) as NavigationRegion3D
-	
-	if not nav_region:
-		print("Creating NavigationRegion3D...")
-		nav_region = NavigationRegion3D.new()
-		nav_region.name = "NavigationRegion3D"
-		add_child(nav_region)
-		await get_tree().process_frame
-	
-	if not nav_region.navigation_mesh:
-		nav_region.navigation_mesh = NavigationMesh.new()
-	
-	var nav_mesh = nav_region.navigation_mesh
-	nav_mesh.clear()
-	
-	# CRITICAL: Navigation mesh settings that prevent wall collision
-	nav_mesh.cell_size = 0.2
-	nav_mesh.cell_height = 0.2
-	nav_mesh.agent_height = 2.0
-	nav_mesh.agent_radius = 0.6  # INCREASED - creates more distance from walls
-	nav_mesh.agent_max_climb = 0.5
-	nav_mesh.agent_max_slope = 45.0
-	nav_mesh.region_min_size = 1.0  # Increased for more stable regions
-	nav_mesh.region_merge_size = 2.0
-	nav_mesh.edge_max_length = 8.0
-	nav_mesh.edge_max_error = 1.0
-	nav_mesh.vertices_per_polygon = 6
-	
-	# Geometry parsing settings
-	nav_mesh.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
-	nav_mesh.geometry_source_geometry_mode = NavigationMesh.SOURCE_GEOMETRY_ROOT_NODE_CHILDREN
-	nav_mesh.geometry_collision_mask = 1
-	
-	print("Baking navigation mesh with agent radius:", nav_mesh.agent_radius)
-	nav_region.bake_navigation_mesh()
-	
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	if nav_mesh.get_vertices().size() > 0:
-		print("SUCCESS: Navigation mesh baked!")
-		print("- Vertices: ", nav_mesh.get_vertices().size())
-		print("- Polygons: ", nav_mesh.get_polygon_count())
-		print("- Agent radius: ", nav_mesh.agent_radius)
-	else:
-		print("Auto-baking failed. Creating manual mesh...")
-		create_safe_manual_navigation_mesh(nav_region)
-
-# Improved manual navigation mesh with proper wall clearance
-func create_safe_manual_navigation_mesh(nav_region: NavigationRegion3D):
-	print("Creating safe manual navigation mesh...")
-	
-	var nav_mesh = nav_region.navigation_mesh
-	nav_mesh.clear()
-	
-	var vertices = PackedVector3Array()
-	var polygons = []
-	
-	# Find walkable cells with safety margin
-	var agent_radius = 0.6  # Match the navigation mesh agent radius
-	var safety_margin = agent_radius + 0.2  # Extra safety
-	
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			
-			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-				# Check if this cell has enough clearance from walls
-				if has_safe_clearance(Vector2i(x, y), safety_margin):
-					create_safe_navigation_quad(Vector2i(x, y), vertices, polygons, agent_radius)
-	
-	if vertices.size() == 0:
-		print("WARNING: No safe navigation areas found! Creating basic fallback...")
-		create_fallback_navigation(vertices, polygons)
-	
-	nav_mesh.set_vertices(vertices)
-	for polygon in polygons:
-		nav_mesh.add_polygon(polygon)
-	
-	print("Safe manual navigation mesh created:")
-	print("- Vertices: ", vertices.size())
-	print("- Polygons: ", polygons.size())
-	print("- Safety margin: ", safety_margin)
-
-func has_safe_clearance(grid_pos: Vector2i, margin_distance: float) -> bool:
-	var world_pos = Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size)
-	var margin_cells = int(ceil(margin_distance / cell_size))
-	
-	# Check all cells within the margin distance
-	for dy in range(-margin_cells, margin_cells + 1):
-		for dx in range(-margin_cells, margin_cells + 1):
-			var check_pos = grid_pos + Vector2i(dx, dy)
-			
-			if is_in_bounds(check_pos):
-				var cell_type = maze_grid[check_pos.y][check_pos.x]
-				if cell_type == CellType.WALL:
-					var check_world_pos = Vector3(check_pos.x * cell_size, 0, check_pos.y * cell_size)
-					var distance = world_pos.distance_to(check_world_pos)
-					if distance < margin_distance:
-						return false
-	
-	return true
-
-func create_safe_navigation_quad(grid_pos: Vector2i, vertices: PackedVector3Array, polygons: Array, agent_radius: float):
-	var world_pos = Vector3(grid_pos.x * cell_size, 0.05, grid_pos.y * cell_size)
-	
-	# Make navigation area smaller to stay away from walls
-	var safe_size = cell_size - (agent_radius * 2.0) - 0.2  # Extra safety margin
-	var half_size = safe_size * 0.5
-	
-	# Only create quad if it's large enough to be useful
-	if safe_size > 0.5:
-		var start_idx = vertices.size()
-		
-		vertices.append(world_pos + Vector3(-half_size, 0, -half_size))
-		vertices.append(world_pos + Vector3(half_size, 0, -half_size))
-		vertices.append(world_pos + Vector3(half_size, 0, half_size))
-		vertices.append(world_pos + Vector3(-half_size, 0, half_size))
-		
-		var poly1 = PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2])
-		var poly2 = PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3])
-		
-		polygons.append(poly1)
-		polygons.append(poly2)
-
-func create_fallback_navigation(vertices: PackedVector3Array, polygons: Array):
-	print("Creating basic fallback navigation at spawn...")
-	
-	# Create a small safe area at the spawn position
-	var spawn_world = grid_to_world(Vector2i(1, 1))
-	var safe_size = cell_size * 0.8
-	var half_size = safe_size * 0.5
-	
-	var start_idx = vertices.size()
-	vertices.append(spawn_world + Vector3(-half_size, 0.05, -half_size))
-	vertices.append(spawn_world + Vector3(half_size, 0.05, -half_size))
-	vertices.append(spawn_world + Vector3(half_size, 0.05, half_size))
-	vertices.append(spawn_world + Vector3(-half_size, 0.05, half_size))
-	
-	var poly1 = PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2])
-	var poly2 = PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3])
-	
-	polygons.append(poly1)
-	polygons.append(poly2)
-
-# AGENT SETUP FUNCTIONS - Use these for your NavigationAgent3D
-func setup_navigation_agent(agent: NavigationAgent3D):
-	"""Call this function to properly configure your NavigationAgent3D"""
-	
-	# CRITICAL: Agent settings must match navigation mesh
-	agent.radius = 0.6  # Same as navigation mesh agent_radius
-	agent.height = 2.0  # Same as navigation mesh agent_height
-	agent.path_desired_distance = 0.8  # Stop before reaching exact target
-	agent.target_desired_distance = 1.0  # How close to get to target
-	agent.path_max_distance = 3.0  # Maximum distance for path correction
-	agent.avoidance_enabled = true
-	agent.neighbor_distance = 3.0
-	agent.max_neighbors = 5
-	agent.time_horizon = 1.5
-	agent.max_speed = 3.0
-	
-	print("Navigation agent configured:")
-	print("- Radius: ", agent.radius)
-	print("- Height: ", agent.height)
-	print("- Desired distance: ", agent.path_desired_distance)
-
-func get_safe_navigation_position(world_pos: Vector3) -> Vector3:
-	"""Get a safe navigation position that's not too close to walls"""
+	# Verify the grid position is valid
+	print("Grid cell type at spawn: ", maze_grid[spawn_grid_pos.y][spawn_grid_pos.x])
 	
 	var nav_region = get_navigation_region()
 	if not nav_region or not nav_region.navigation_mesh:
-		return world_pos
+		print("No navigation available, using base spawn")
+		return base_spawn
 	
-	# Use NavigationServer3D to find the closest safe point
 	var nav_map = nav_region.get_navigation_map()
-	var safe_pos = NavigationServer3D.map_get_closest_point(nav_map, world_pos)
+	if not nav_map.is_valid():
+		print("Navigation map not valid, using base spawn")
+		return base_spawn
 	
-	# If the safe position is too far, use original
-	if world_pos.distance_to(safe_pos) > cell_size * 2:
-		return world_pos
+	# Test navigation at floor level but spawn above
+	var nav_test_pos = Vector3(base_spawn.x, 0.1, base_spawn.z)
+	var safe_spawn = NavigationServer3D.map_get_closest_point(nav_map, nav_test_pos)
+	safe_spawn.y = 3.0  # Always spawn above floor
 	
-	return safe_pos
+	print("Navigation test position: ", nav_test_pos)
+	print("Closest nav point: ", safe_spawn)
+	
+	# Check if the navigation point is reasonably close to our intended spawn
+	var horizontal_distance = Vector2(base_spawn.x, base_spawn.z).distance_to(Vector2(safe_spawn.x, safe_spawn.z))
+	print("Horizontal distance to nav point: ", horizontal_distance)
+	
+	if horizontal_distance < 1.0:  # Close enough to navigation mesh
+		return safe_spawn
+	else:
+		print("Navigation point too far, using base spawn")
+		return base_spawn
 
-func is_position_safe_for_navigation(world_pos: Vector3) -> bool:
-	"""Check if a world position is safe for navigation"""
-	
+# NAVIGATION UTILITIES
+func get_navigation_region() -> NavigationRegion3D:
+	return find_child("NavigationRegion3D", false, false) as NavigationRegion3D
+
+func is_position_on_navigation_mesh(world_pos: Vector3) -> bool:
 	var nav_region = get_navigation_region()
-	if not nav_region or not nav_region.navigation_mesh:
+	if not nav_region:
+		print("No navigation region found!")
+		return false
+	if not nav_region.navigation_mesh:
+		print("No navigation mesh found!")
 		return false
 	
 	var nav_map = nav_region.get_navigation_map()
+	if not nav_map.is_valid():
+		print("Navigation map is not valid!")
+		return false
+	
 	var closest_point = NavigationServer3D.map_get_closest_point(nav_map, world_pos)
+	var distance = world_pos.distance_to(closest_point)
+	var is_on_mesh = distance < 0.3
 	
-	# Position is safe if it's very close to a valid navigation point
-	return world_pos.distance_to(closest_point) < 0.5
+	print("Position ", world_pos, " -> closest nav point: ", closest_point, " (distance: ", distance, ") -> on mesh: ", is_on_mesh)
+	return is_on_mesh
 
-# Enhanced spawn position that ensures navigation safety
-func get_safe_spawn_position() -> Vector3:
-	"""Get a spawn position that's guaranteed to be safe for navigation"""
-	
-	# Start with the basic spawn position
-	var base_spawn = get_player_spawn_position()
-	
-	# Try to find a safe navigation position near the spawn
-	var safe_spawn = get_safe_navigation_position(base_spawn)
-	
-	# If safe position is too far, create a manual safe zone
-	if base_spawn.distance_to(safe_spawn) > cell_size:
-		print("WARNING: Spawn position not safe for navigation, using fallback")
-		return grid_to_world(Vector2i(1, 1)) + Vector3(0, 1, 0)
-	
-	return safe_spawn
-
-# Debug function to visualize navigation mesh
-func debug_navigation_mesh():
-	"""Call this to see navigation mesh info"""
-	
+func get_safe_navigation_position_for_agent(world_pos: Vector3) -> Vector3:
 	var nav_region = get_navigation_region()
 	if not nav_region or not nav_region.navigation_mesh:
-		print("No navigation mesh found!")
+		return world_pos
+	var nav_map = nav_region.get_navigation_map()
+	if not nav_map.is_valid():
+		return world_pos
+	var safe_pos = NavigationServer3D.map_get_closest_point(nav_map, world_pos)
+	return safe_pos if world_pos.distance_to(safe_pos) < cell_size * 1.5 else world_pos
+
+func setup_navigation_agent_for_maze(agent: NavigationAgent3D):
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	
+	# OPTIMIZED: Agent settings for better corner navigation
+	agent.radius = 0.3  # Smaller radius for better corner navigation
+	agent.height = 2.0
+	agent.path_desired_distance = 0.2  # Get very close to waypoints
+	agent.target_desired_distance = 0.8  # Stop closer to target
+	agent.path_max_distance = 50.0  # Allow very long path corrections
+	agent.avoidance_enabled = true
+	agent.neighbor_distance = 2.0
+	agent.max_neighbors = 3
+	agent.time_horizon = 1.0
+	agent.max_speed = 3.0  # Slightly slower for better navigation
+	
+	# IMPORTANT: Set debug enabled to see pathfinding
+	agent.debug_enabled = true
+	agent.debug_use_custom = true
+	agent.debug_path_custom_color = Color.RED
+	
+	print("Navigation agent configured for corner navigation:")
+	print("- Radius: ", agent.radius)
+	print("- Path desired distance: ", agent.path_desired_distance)
+	print("- Target desired distance: ", agent.target_desired_distance)
+	print("- Max path distance: ", agent.path_max_distance)
+
+# UTILITY FUNCTIONS
+func grid_to_world(grid_pos: Vector2i) -> Vector3:
+	return Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size)
+
+func world_to_grid(world_pos: Vector3) -> Vector2i:
+	return Vector2i(int(world_pos.x / cell_size), int(world_pos.z / cell_size))
+
+func get_secret_room_positions() -> Array[Vector2i]:
+	return secret_rooms
+
+func get_maze_data() -> Array[Array]:
+	return maze_grid
+
+# DEBUG FUNCTIONS
+func debug_navigation_setup():
+	print("=== NAVIGATION DEBUG ===")
+	var nav_region = get_navigation_region()
+	if not nav_region or not nav_region.navigation_mesh:
+		print("ERROR: No navigation mesh!")
 		return
 	
 	var nav_mesh = nav_region.navigation_mesh
-	print("=== NAVIGATION MESH DEBUG ===")
-	print("Agent radius: ", nav_mesh.agent_radius)
-	print("Agent height: ", nav_mesh.agent_height)
-	print("Cell size: ", nav_mesh.cell_size)
+	var nav_map = nav_region.get_navigation_map()
 	print("Vertices: ", nav_mesh.get_vertices().size())
 	print("Polygons: ", nav_mesh.get_polygon_count())
+	print("Agent radius: ", nav_mesh.agent_radius)
+	print("Map valid: ", nav_map.is_valid())
 	
 	if nav_mesh.get_vertices().size() > 0:
 		var vertices = nav_mesh.get_vertices()
 		var min_pos = vertices[0]
 		var max_pos = vertices[0]
-		
 		for vertex in vertices:
 			min_pos.x = min(min_pos.x, vertex.x)
 			min_pos.z = min(min_pos.z, vertex.z)
 			max_pos.x = max(max_pos.x, vertex.x)
 			max_pos.z = max(max_pos.z, vertex.z)
-		
-		print("Navigation bounds: ", min_pos, " to ", max_pos)
-		print("Navigation area size: ", max_pos - min_pos)
-# Debug function to check collision setup
-func check_collision_setup():
-	print("=== COLLISION DEBUG ===")
-	var collision_bodies = find_children("", "StaticBody3D", true, false)
-	print("Found ", collision_bodies.size(), " StaticBody3D nodes")
-	
-	for body in collision_bodies:
-		print("- Body: ", body.name, " Layer: ", body.collision_layer, " Mask: ", body.collision_mask)
-		var shapes = body.find_children("", "CollisionShape3D", true, false)
-		print("  - Collision shapes: ", shapes.size())
-		for shape in shapes:
-			print("    - Shape: ", shape.shape, " at ", shape.global_position)
+		print("Bounds: ", min_pos, " to ", max_pos)
 
-# Improved manual navigation mesh creation
-func create_manual_navigation_mesh(nav_region: NavigationRegion3D):
-	print("Creating manual navigation mesh...")
+func debug_spawn_area():
+	"""Debug the area around the spawn position"""
+	print("=== SPAWN AREA DEBUG ===")
 	
-	var nav_mesh = nav_region.navigation_mesh
-	nav_mesh.clear()
+	var spawn_grid = Vector2i(1, 1)
+	print("Spawn grid position: ", spawn_grid)
+	print("Maze grid size: ", maze_grid.size(), "x", maze_grid[0].size() if maze_grid.size() > 0 else 0)
 	
-	var vertices = PackedVector3Array()
-	var polygons = []
+	# Check 3x3 area around spawn
+	for dy in range(-1, 2):
+		var row_str = ""
+		for dx in range(-1, 2):
+			var check_pos = spawn_grid + Vector2i(dx, dy)
+			if is_in_bounds(check_pos):
+				var cell_type = maze_grid[check_pos.y][check_pos.x]
+				match cell_type:
+					CellType.WALL:
+						row_str += "W "
+					CellType.PATH:
+						row_str += "P "
+					CellType.EXIT:
+						row_str += "E "
+					CellType.SECRET_ROOM:
+						row_str += "S "
+					_:
+						row_str += "? "
+			else:
+				row_str += "X "
+		print("Row ", dy + 1, ": ", row_str)
 	
-	# Find all walkable cells
-	var walkable_cells = []
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-				walkable_cells.append(Vector2i(x, y))
+	# Check world positions
+	var spawn_world = grid_to_world(spawn_grid)
+	print("Spawn world position (floor level): ", spawn_world)
+	print("Spawn world position (player level): ", spawn_world + Vector3(0, 3.0, 0))
 	
-	print("Found ", walkable_cells.size(), " walkable cells")
-	
-	if walkable_cells.is_empty():
-		print("ERROR: No walkable cells found!")
-		return
-	
-	# Create overlapping navigation polygons for each walkable cell
-	for cell in walkable_cells:
-		var world_pos = Vector3(cell.x * cell_size, 0.05, cell.y * cell_size)  # Slightly above floor
-		var half_size = cell_size * 0.52  # Slight overlap to prevent gaps
-		
-		var start_idx = vertices.size()
-		
-		# Add 4 vertices for this cell (counter-clockwise)
-		vertices.append(world_pos + Vector3(-half_size, 0, -half_size))  # 0: Bottom-left
-		vertices.append(world_pos + Vector3(half_size, 0, -half_size))   # 1: Bottom-right  
-		vertices.append(world_pos + Vector3(half_size, 0, half_size))    # 2: Top-right
-		vertices.append(world_pos + Vector3(-half_size, 0, half_size))   # 3: Top-left
-		
-		# Create two triangles with correct winding (counter-clockwise)
-		var poly1 = PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2])  # First triangle
-		var poly2 = PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3])  # Second triangle
-		
-		polygons.append(poly1)
-		polygons.append(poly2)
-	
-	# Apply the manual mesh
-	nav_mesh.set_vertices(vertices)
-	for polygon in polygons:
-		nav_mesh.add_polygon(polygon)
-	
-	print("Manual navigation mesh created:")
-	print("- Vertices: ", vertices.size())
-	print("- Polygons: ", polygons.size())
-	
-	# Force the navigation region to update
-	nav_region.navigation_mesh = nav_mesh
-	nav_region.enabled = false
-	await get_tree().process_frame
-	nav_region.enabled = true
+	print("========================")
 
-# Also update your build_collision_shapes function to ensure proper setup
-func build_collision_shapes():
-	var static_body = StaticBody3D.new()
-	static_body.name = "MazeCollision"
-	
-	# IMPORTANT: Set collision layers for navigation
-	static_body.collision_layer = 1  # Layer 1 = "Walls"
-	static_body.collision_mask = 0   # Walls don't need to detect anything
-	
-	var wall_count = 0
-	
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			
-			# Add collision only for walls
-			if cell_type == CellType.WALL:
-				var collision_shape = CollisionShape3D.new()
-				var box_shape = BoxShape3D.new()
-				
-				# Set box size - use full cell size for collision
-				box_shape.size = Vector3(cell_size, wall_height, cell_size)
-				
-				collision_shape.shape = box_shape
-				collision_shape.position = Vector3(x * cell_size, wall_height * 0.5, y * cell_size)
-				collision_shape.name = "WallCollision_" + str(x) + "_" + str(y)
-				
-				static_body.add_child(collision_shape)
-				wall_count += 1
-	
-	# Add floor collision (important for navigation mesh generation)
-	var floor_collision = CollisionShape3D.new()
-	var floor_shape = BoxShape3D.new()
-	var maze_world_size = maze_grid.size() * cell_size
-	floor_shape.size = Vector3(maze_world_size, 0.1, maze_world_size)
-	floor_collision.shape = floor_shape
-	floor_collision.position = Vector3(maze_world_size * 0.5 - cell_size * 0.5, -0.05, maze_world_size * 0.5 - cell_size * 0.5)
-	floor_collision.name = "FloorCollision"
-	static_body.add_child(floor_collision)
-	
-	add_child(static_body)
-	
-	print("Maze collision created:")
-	print("- Wall collisions: ", wall_count)
-	print("- Collision layer: ", static_body.collision_layer)
-	print("- Static body ready for navigation")
-	
-	# Ensure the static body is properly registered
-	static_body.set_owner(self)
-
-# Add this function to manually trigger navigation baking for testing
-func force_rebake_navigation():
+func force_navigation_rebake():
 	print("Force rebaking navigation...")
 	var nav_region = get_navigation_region()
 	if nav_region and nav_region.navigation_mesh:
 		nav_region.navigation_mesh.clear()
 		await get_tree().process_frame
-		nav_region.bake_navigation_mesh()
-		await get_tree().process_frame
-		
-		if nav_region.navigation_mesh.get_vertices().size() > 0:
-			print("Force rebake SUCCESS!")
-		else:
-			print("Force rebake FAILED - using manual mesh")
-			create_manual_navigation_mesh(nav_region)
-
-func get_navigation_region() -> NavigationRegion3D:
-	return find_child("NavigationRegion3D", false, false) as NavigationRegion3D
-
-# Utility function to get world position from grid coordinates
-func grid_to_world(grid_pos: Vector2i) -> Vector3:
-	return Vector3(grid_pos.x * cell_size, 0, grid_pos.y * cell_size)
-
-# Utility function to get grid coordinates from world position
-func world_to_grid(world_pos: Vector3) -> Vector2i:
-	return Vector2i(int(world_pos.x / cell_size), int(world_pos.z / cell_size))
+		bake_navigation_mesh()

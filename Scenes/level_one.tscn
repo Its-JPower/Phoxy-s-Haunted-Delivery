@@ -160,7 +160,7 @@ autoplay = "LevelOneStart"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
-[node name="WA_FNAF" parent="." groups=["Enemies"] instance=ExtResource("4_ik1yt")]
+[node name="WA_FNAF" parent="." instance=ExtResource("4_ik1yt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3648, 1.23796, 89.6372)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
