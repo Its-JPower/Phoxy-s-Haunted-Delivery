@@ -345,80 +345,6 @@ func create_manual_navigation_mesh(nav_region: NavigationRegion3D):
 	await get_tree().create_timer(0.5).timeout
 	validate_navigation_mesh(nav_mesh)
 
-func create_corridor_based_navigation(vertices: PackedVector3Array, polygons: Array):
-	"""Create navigation mesh based on corridor mapping for better pathfinding around corners"""
-	
-	print("Creating corridor-based navigation...")
-	
-	# Create a larger navigation area for each walkable cell with generous overlap
-	var created_areas = 0
-	
-	for y in range(maze_grid.size()):
-		for x in range(maze_grid[y].size()):
-			var cell_type = maze_grid[y][x]
-			
-			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-				var world_pos = Vector3(x * cell_size, 0.05, y * cell_size)
-				
-				# Create LARGE overlapping navigation areas for better pathfinding
-				var nav_size = cell_size * 0.8  # Much larger navigation areas
-				var half_size = nav_size * 0.5
-				
-				var start_idx = vertices.size()
-				
-				vertices.append_array([
-					world_pos + Vector3(-half_size, 0, -half_size),
-					world_pos + Vector3(half_size, 0, -half_size),
-					world_pos + Vector3(half_size, 0, half_size),
-					world_pos + Vector3(-half_size, 0, half_size)
-				])
-				
-				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
-				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
-				created_areas += 1
-				
-				# Create additional corner navigation helpers
-				create_corner_navigation_helpers(Vector2i(x, y), world_pos, vertices, polygons)
-	
-	print("Created ", created_areas, " navigation areas with corner helpers")
-
-func create_corner_navigation_helpers(grid_pos: Vector2i, world_pos: Vector3, vertices: PackedVector3Array, polygons: Array):
-	"""Create additional navigation areas at corners to help pathfinding"""
-	
-	# Check if this cell is at a corner (has paths in perpendicular directions)
-	var has_north = is_walkable_cell(grid_pos + Vector2i(0, -1))
-	var has_south = is_walkable_cell(grid_pos + Vector2i(0, 1))
-	var has_east = is_walkable_cell(grid_pos + Vector2i(1, 0))
-	var has_west = is_walkable_cell(grid_pos + Vector2i(-1, 0))
-	
-	# Create corner helpers for L-shaped intersections
-	var corner_positions = []
-	
-	if has_north and has_east:  # Northeast corner
-		corner_positions.append(world_pos + Vector3(cell_size * 0.3, 0, -cell_size * 0.3))
-	if has_north and has_west:  # Northwest corner
-		corner_positions.append(world_pos + Vector3(-cell_size * 0.3, 0, -cell_size * 0.3))
-	if has_south and has_east:  # Southeast corner
-		corner_positions.append(world_pos + Vector3(cell_size * 0.3, 0, cell_size * 0.3))
-	if has_south and has_west:  # Southwest corner
-		corner_positions.append(world_pos + Vector3(-cell_size * 0.3, 0, cell_size * 0.3))
-	
-	# Create small navigation quads at corner positions
-	for corner_pos in corner_positions:
-		var corner_size = cell_size * 0.4
-		var half_size = corner_size * 0.5
-		
-		var start_idx = vertices.size()
-		vertices.append_array([
-			corner_pos + Vector3(-half_size, 0, -half_size),
-			corner_pos + Vector3(half_size, 0, -half_size),
-			corner_pos + Vector3(half_size, 0, half_size),
-			corner_pos + Vector3(-half_size, 0, half_size)
-		])
-		
-		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
-		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
-
 func is_walkable_cell(grid_pos: Vector2i) -> bool:
 	"""Check if a grid position contains a walkable cell"""
 	if not is_in_bounds(grid_pos):
@@ -480,48 +406,6 @@ func flood_fill_walkable_region(start_pos: Vector2i, processed_cells: Dictionary
 				cells_to_check.append(neighbor)
 	
 	return region
-
-func create_seamless_region_navigation(region: Array, vertices: PackedVector3Array, polygons: Array):
-	"""Create a seamless navigation area for a connected region with overlapping quads"""
-	if region.is_empty():
-		return
-	
-	print("Creating seamless navigation for region with ", region.size(), " cells:")
-	
-	var navigation_created = false
-	
-	for cell_pos in region:
-		var cell_type = maze_grid[cell_pos.y][cell_pos.x]
-		
-		# Only create navigation for actual walkable cells
-		if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
-			var world_pos = Vector3(cell_pos.x * cell_size, 0.05, cell_pos.y * cell_size)
-			
-			# Create OVERLAPPING navigation quads to eliminate gaps
-			var base_size = cell_size * 0.4  # Base size with wall clearance
-			var overlap = 0.2  # Additional overlap to connect tiles
-			var half_size = base_size + overlap
-			
-			var start_idx = vertices.size()
-			
-			vertices.append_array([
-				world_pos + Vector3(-half_size, 0, -half_size),
-				world_pos + Vector3(half_size, 0, -half_size),
-				world_pos + Vector3(half_size, 0, half_size),
-				world_pos + Vector3(-half_size, 0, half_size)
-			])
-			
-			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
-			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
-			navigation_created = true
-	
-	# ADDITIONAL: Create bridge connections between adjacent cells
-	create_navigation_bridges_for_region(region, vertices, polygons)
-	
-	if not navigation_created:
-		print("  No navigation created for this region")
-	else:
-		print("  Navigation region completed with overlapping tiles")
 
 func create_navigation_bridges_for_region(region: Array, vertices: PackedVector3Array, polygons: Array):
 	"""Create bridge navigation areas between adjacent cells in a region"""
@@ -853,12 +737,12 @@ func setup_navigation_agent_for_maze(agent: NavigationAgent3D):
 	agent.height = 2.0
 	agent.path_desired_distance = 0.2  # Get very close to waypoints
 	agent.target_desired_distance = 0.8  # Stop closer to target
-	agent.path_max_distance = 50.0  # Allow very long path corrections
+	agent.path_max_distance = 100.0  # Allow very long path corrections
 	agent.avoidance_enabled = true
 	agent.neighbor_distance = 2.0
 	agent.max_neighbors = 3
 	agent.time_horizon = 1.0
-	agent.max_speed = 3.0  # Slightly slower for better navigation
+	agent.max_speed = 8.0  # Slightly slower for better navigation
 	
 	# IMPORTANT: Set debug enabled to see pathfinding
 	agent.debug_enabled = true
@@ -954,3 +838,217 @@ func force_navigation_rebake():
 		nav_region.navigation_mesh.clear()
 		await get_tree().process_frame
 		bake_navigation_mesh()
+
+func create_expanded_navigation_coverage(center_pos: Vector3, vertices: PackedVector3Array, polygons: Array):
+	"""Create additional overlapping navigation tiles around each walkable cell"""
+	
+	# Create 4 additional offset tiles around the main tile for maximum coverage
+	var offset_positions = [
+		center_pos + Vector3(cell_size * 0.3, 0, 0),           # East offset
+		center_pos + Vector3(-cell_size * 0.3, 0, 0),          # West offset  
+		center_pos + Vector3(0, 0, cell_size * 0.3),           # South offset
+		center_pos + Vector3(0, 0, -cell_size * 0.3),          # North offset
+	]
+	
+	for offset_pos in offset_positions:
+		var tile_size = cell_size * 0.9  # Smaller overlapping tiles
+		var half_size = tile_size * 0.5
+		
+		var start_idx = vertices.size()
+		vertices.append_array([
+			offset_pos + Vector3(-half_size, 0, -half_size),
+			offset_pos + Vector3(half_size, 0, -half_size),
+			offset_pos + Vector3(half_size, 0, half_size),
+			offset_pos + Vector3(-half_size, 0, half_size)
+		])
+		
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func create_sub_navigation_tiles(center_pos: Vector3, vertices: PackedVector3Array, polygons: Array):
+	"""Create multiple sub-tiles around each main navigation tile"""
+	
+	# Create a 3x3 grid of overlapping sub-tiles centered on the main tile
+	for dy in range(-1, 2):
+		for dx in range(-1, 2):
+			if dx == 0 and dy == 0:
+				continue  # Skip center (already created)
+			
+			var offset = Vector3(dx * cell_size * 0.4, 0, dy * cell_size * 0.4)
+			var tile_pos = center_pos + offset
+			var tile_size = cell_size * 0.8
+			var half_size = tile_size * 0.5
+			
+			var start_idx = vertices.size()
+			vertices.append_array([
+				tile_pos + Vector3(-half_size, 0, -half_size),
+				tile_pos + Vector3(half_size, 0, -half_size),
+				tile_pos + Vector3(half_size, 0, half_size),
+				tile_pos + Vector3(-half_size, 0, half_size)
+			])
+			
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func create_enhanced_navigation_bridges_for_region(region: Array, vertices: PackedVector3Array, polygons: Array):
+	"""Create WIDER and MORE bridge connections between adjacent cells"""
+	
+	var bridge_count = 0
+	
+	for cell_pos in region:
+		var cell_type = maze_grid[cell_pos.y][cell_pos.x]
+		
+		if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+			# Check all 4 directions and create wide bridges
+			var directions = [
+				Vector2i(1, 0),   # Right
+				Vector2i(0, 1),   # Down
+				Vector2i(-1, 0),  # Left  
+				Vector2i(0, -1),  # Up
+			]
+			
+			for direction in directions:
+				var neighbor_pos = cell_pos + direction
+				
+				if region.has(neighbor_pos):
+					var neighbor_type = maze_grid[neighbor_pos.y][neighbor_pos.x]
+					if neighbor_type == CellType.PATH or neighbor_type == CellType.EXIT or neighbor_type == CellType.SECRET_ROOM:
+						# Create WIDE bridge between these cells
+						create_wide_bridge_between_cells(cell_pos, neighbor_pos, vertices, polygons)
+						bridge_count += 1
+	
+	print("  Created ", bridge_count, " wide navigation bridges")
+
+func create_wide_bridge_between_cells(cell1: Vector2i, cell2: Vector2i, vertices: PackedVector3Array, polygons: Array):
+	"""Create a WIDE bridge navigation area between two adjacent cells"""
+	
+	var world_pos1 = Vector3(cell1.x * cell_size, 0.05, cell1.y * cell_size)
+	var world_pos2 = Vector3(cell2.x * cell_size, 0.05, cell2.y * cell_size)
+	
+	var center = (world_pos1 + world_pos2) * 0.5
+	var direction = (world_pos2 - world_pos1).normalized()
+	var perpendicular = Vector3(-direction.z, 0, direction.x)
+	
+	# MUCH WIDER bridge dimensions
+	var length_half = cell_size * 0.8  # Longer bridge
+	var width_half = cell_size * 0.7   # Much wider bridge
+	
+	var start_idx = vertices.size()
+	vertices.append_array([
+		center + (-direction * length_half) + (-perpendicular * width_half),
+		center + (-direction * length_half) + (perpendicular * width_half),
+		center + (direction * length_half) + (perpendicular * width_half),
+		center + (direction * length_half) + (-perpendicular * width_half)
+	])
+	
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func create_corridor_based_navigation(vertices: PackedVector3Array, polygons: Array):
+	"""Create navigation mesh with LARGE overlapping tiles - SIMPLE VERSION"""
+	
+	print("Creating large overlapping navigation tiles...")
+	
+	var created_areas = 0
+	
+	for y in range(maze_grid.size()):
+		for x in range(maze_grid[y].size()):
+			var cell_type = maze_grid[y][x]
+			
+			if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+				var world_pos = Vector3(x * cell_size, 0.05, y * cell_size)
+				
+				# MUCH LARGER navigation areas with significant overlap
+				var nav_size = cell_size * 1.5  # 50% larger than cell size
+				var half_size = nav_size * 0.5
+				
+				var start_idx = vertices.size()
+				
+				vertices.append_array([
+					world_pos + Vector3(-half_size, 0, -half_size),
+					world_pos + Vector3(half_size, 0, -half_size),
+					world_pos + Vector3(half_size, 0, half_size),
+					world_pos + Vector3(-half_size, 0, half_size)
+				])
+				
+				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+				polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+				created_areas += 1
+	
+	print("Created ", created_areas, " large overlapping navigation areas")
+
+func create_corner_navigation_helpers(grid_pos: Vector2i, world_pos: Vector3, vertices: PackedVector3Array, polygons: Array):
+	"""Create LARGER corner helpers - SIMPLE VERSION"""
+	
+	var has_north = is_walkable_cell(grid_pos + Vector2i(0, -1))
+	var has_south = is_walkable_cell(grid_pos + Vector2i(0, 1))
+	var has_east = is_walkable_cell(grid_pos + Vector2i(1, 0))
+	var has_west = is_walkable_cell(grid_pos + Vector2i(-1, 0))
+	
+	# Create larger corner helpers
+	var corner_positions = []
+	
+	if has_north and has_east:  # Northeast corner
+		corner_positions.append(world_pos + Vector3(cell_size * 0.4, 0, -cell_size * 0.4))
+	if has_north and has_west:  # Northwest corner
+		corner_positions.append(world_pos + Vector3(-cell_size * 0.4, 0, -cell_size * 0.4))
+	if has_south and has_east:  # Southeast corner
+		corner_positions.append(world_pos + Vector3(cell_size * 0.4, 0, cell_size * 0.4))
+	if has_south and has_west:  # Southwest corner
+		corner_positions.append(world_pos + Vector3(-cell_size * 0.4, 0, cell_size * 0.4))
+	
+	# Create MUCH LARGER navigation quads at corner positions
+	for corner_pos in corner_positions:
+		var corner_size = cell_size * 1.0  # Large corners
+		var half_size = corner_size * 0.5
+		
+		var start_idx = vertices.size()
+		vertices.append_array([
+			corner_pos + Vector3(-half_size, 0, -half_size),
+			corner_pos + Vector3(half_size, 0, -half_size),
+			corner_pos + Vector3(half_size, 0, half_size),
+			corner_pos + Vector3(-half_size, 0, half_size)
+		])
+		
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+		polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func create_seamless_region_navigation(region: Array, vertices: PackedVector3Array, polygons: Array):
+	"""Create seamless navigation with LARGE overlap - SIMPLE VERSION"""
+	if region.is_empty():
+		return
+	
+	print("Creating seamless navigation for region with ", region.size(), " cells:")
+	
+	var navigation_created = false
+	
+	for cell_pos in region:
+		var cell_type = maze_grid[cell_pos.y][cell_pos.x]
+		
+		if cell_type == CellType.PATH or cell_type == CellType.EXIT or cell_type == CellType.SECRET_ROOM:
+			var world_pos = Vector3(cell_pos.x * cell_size, 0.05, cell_pos.y * cell_size)
+			
+			# LARGE overlapping navigation quads
+			var base_size = cell_size * 1.4  # 40% larger than cell
+			var half_size = base_size * 0.5
+			
+			var start_idx = vertices.size()
+			
+			vertices.append_array([
+				world_pos + Vector3(-half_size, 0, -half_size),
+				world_pos + Vector3(half_size, 0, -half_size),
+				world_pos + Vector3(half_size, 0, half_size),
+				world_pos + Vector3(-half_size, 0, half_size)
+			])
+			
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+			polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+			navigation_created = true
+	
+	# Create bridge connections
+	create_navigation_bridges_for_region(region, vertices, polygons)
+	
+	if not navigation_created:
+		print("  No navigation created for this region")
+	else:
+		print("  Navigation region completed with large overlapping tiles")

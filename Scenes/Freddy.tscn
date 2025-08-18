@@ -19,9 +19,6 @@ size = Vector3(1, 2.86914, 1.23456)
 [node name="WA_FNAF" type="CharacterBody3D" groups=["Enemies"]]
 collision_layer = 8
 script = ExtResource("1_mn02b")
-speed = null
-gravity = null
-path_update_interval = null
 
 [node name="Freddy" parent="." instance=ExtResource("2_x4qok")]
 transform = Transform3D(-0.125, 0, -1.09278e-08, 0, 0.125, 0, 1.09278e-08, 0, -0.125, 0, 0, 0)

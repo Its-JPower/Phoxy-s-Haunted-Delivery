@@ -45,7 +45,6 @@ func _ready():
 		navigation_agent.neighbor_distance = 3.0
 		navigation_agent.max_neighbors = 3
 		navigation_agent.time_horizon = 1.5
-		navigation_agent.max_speed = speed
 		
 		# Connect navigation signals
 		navigation_agent.navigation_finished.connect(_on_navigation_finished)
