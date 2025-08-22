@@ -2,36 +2,12 @@
 
 [ext_resource type="Theme" uid="uid://dbtrx42b3xo3" path="res://Assets/Other/custom_theme.tres" id="1_04awi"]
 
+[sub_resource type="Animation" id="Animation_wlx37"]
+length = 0.001
+
 [sub_resource type="Animation" id="Animation_04awi"]
 resource_name = "ad"
 length = 2.0
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("AD:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 1, 2),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(1.125, 1.125), Vector2(1, 1)]
-}
-
-[sub_resource type="Animation" id="Animation_wlx37"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("AD:scale")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector2(1, 1)]
-}
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_4v3yf"]
 _data = {
@@ -86,13 +62,6 @@ text = "Play Game"
 layout_mode = 2
 theme_override_constants/margin_top = 45
 
-[node name="btn_options" type="Button" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 3
-theme = ExtResource("1_04awi")
-text = "Settings"
-
 [node name="MarginContainer3" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/margin_top = 45
@@ -105,19 +74,6 @@ text = "Quit"
 
 [node name="audio_player" type="AudioStreamPlayer" parent="MarginContainer/VBoxContainer"]
 volume_db = 5.0
-
-[node name="AD" type="Label" parent="."]
-layout_mode = 2
-offset_left = 751.0
-offset_top = 85.0
-offset_right = 1032.0
-offset_bottom = 118.0
-rotation = 0.244346
-pivot_offset = Vector2(140.5, 16.5)
-size_flags_horizontal = 4
-theme_override_colors/font_color = Color(1, 1, 0, 1)
-theme_override_font_sizes/font_size = 45
-text = "ALSO TRY SEREIN!"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

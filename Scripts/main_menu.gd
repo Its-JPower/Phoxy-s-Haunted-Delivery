@@ -8,18 +8,25 @@ extends CanvasLayer
 @onready var audio_player: AudioStreamPlayer = $Menu/MarginContainer/VBoxContainer/audio_player
 
 var rotation_speed = .125
-
+var rotate_dir = 1
 
 # Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	foxy_anim.play("idle", .25, 0.06125)
+#func _ready() -> void:
+	#foxy_anim.play("idle", .25, 0.06125)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	camera.rotate_y(rotation_speed * delta)
-
-
+	if rotate_dir == 1:
+		camera.rotate_y(rotation_speed * delta)
+	elif rotate_dir == 0:
+		camera.rotate_y(-(rotation_speed * delta))
+	print(camera.rotation_degrees.y)
+	print(rotate_dir)
+	if camera.rotation_degrees.y >= 65:
+		rotate_dir = 0
+	elif camera.rotation_degrees.y <= -25:
+		rotate_dir = 1
 #region UI Buttons
 
 

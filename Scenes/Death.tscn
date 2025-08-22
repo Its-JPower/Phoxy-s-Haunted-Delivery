@@ -1,0 +1,98 @@
+[gd_scene load_steps=11 format=3 uid="uid://cygbue7swmavf"]
+
+[ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scripts/main_menu.gd" id="1_6nwb2"]
+[ext_resource type="AudioStream" uid="uid://danf85ai5dbe4" path="res://Assets/Sound/Fnaf Freddys Death Song.mp3" id="4_6poc4"]
+[ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_8tvvv"]
+[ext_resource type="PackedScene" uid="uid://bl7tlvrwidnmb" path="res://Scenes/menuui.tscn" id="5_8u8gh"]
+[ext_resource type="PackedScene" uid="uid://b5nr2uctspa8" path="res://Assets/Enemies/golden freddy head.glb" id="5_prkst"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_n45e2"]
+sky_material = SubResource("ProceduralSkyMaterial_ce3w2")
+
+[sub_resource type="Environment" id="Environment_opfnp"]
+background_mode = 1
+background_color = Color(0.340443, 0.000205651, 0.0883829, 1)
+sky = SubResource("Sky_n45e2")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_n45e2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_opfnp"]
+albedo_color = Color(0, 0, 0, 1)
+
+[node name="StartMenu" type="CanvasLayer"]
+script = ExtResource("1_6nwb2")
+
+[node name="Background" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Background"]
+environment = SubResource("Environment_opfnp")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SubViewport" type="SubViewport" parent="Background/SubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(1152, 648)
+render_target_update_mode = 4
+
+[node name="Node3D" type="Node3D" parent="Background/SubViewportContainer/SubViewport"]
+
+[node name="Camera3D" type="Camera3D" parent="Background/SubViewportContainer/SubViewport/Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 15)
+
+[node name="Timer" type="Timer" parent="Background/SubViewportContainer/SubViewport/Node3D/Camera3D"]
+wait_time = 5.0
+autostart = true
+
+[node name="Light" type="OmniLight3D" parent="Background"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.40152, 1.40822, 3.42775)
+light_color = Color(0.524822, 0.129809, 0.0343147, 1)
+shadow_enabled = true
+
+[node name="fnafpizzeriamodel" parent="Background" instance=ExtResource("4_8tvvv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.67859, -1.48761, 3.80884)
+
+[node name="GPUParticlesCollisionBox3D" type="GPUParticlesCollisionBox3D" parent="Background/fnafpizzeriamodel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.94444, -0.187163, -5.52926)
+size = Vector3(4.69244, 0.346924, 4.29321)
+
+[node name="roof" type="MeshInstance3D" parent="Background"]
+transform = Transform3D(14.4006, 0, 0, 0, -0.218534, 0, 0, 0, -11.5744, -0.405151, 1.85394, 4.49105)
+mesh = SubResource("PlaneMesh_n45e2")
+surface_material_override/0 = SubResource("StandardMaterial3D_opfnp")
+
+[node name="Menu" parent="." instance=ExtResource("5_8u8gh")]
+mouse_filter = 2
+
+[node name="Label" parent="Menu/MarginContainer/VBoxContainer" index="0"]
+text = "Death"
+
+[node name="btn_play" parent="Menu/MarginContainer/VBoxContainer" index="3"]
+text = "Play Again"
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_6poc4")
+autoplay = true
+
+[node name="golden freddy head" parent="." instance=ExtResource("5_prkst")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -14, 4)
+
+[connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_entered"]
+[connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_exited"]
+[connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_play_pressed"]
+[connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_btn_quit_mouse_entered"]
+[connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_btn_quit_mouse_exited"]
+[connection signal="pressed" from="Menu/MarginContainer/VBoxContainer/btn_quit" to="." method="_on_quit_pressed"]
+
+[editable path="Menu"]

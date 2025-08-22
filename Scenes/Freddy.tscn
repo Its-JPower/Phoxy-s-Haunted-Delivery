@@ -1,12 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://dsv7sw3idon4b"]
+[gd_scene load_steps=7 format=3 uid="uid://dsv7sw3idon4b"]
 
 [ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://ccqc7mn4644ta" path="res://Assets/Anmtion/Freddy/freddy run.glb" id="2_x4qok"]
-[ext_resource type="Texture2D" uid="uid://d2pibnu5bfqik" path="res://Assets/Enemies/Freddy_Freddy Fazbear Texture.png" id="3_x4qok"]
 [ext_resource type="AudioStream" uid="uid://cy6qft0gi2ula" path="res://Assets/Audio/animatronic_walk.mp3" id="4_hps1a"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hps1a"]
-albedo_texture = ExtResource("3_x4qok")
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]
 
@@ -102,9 +98,6 @@ bones/38/rotation = Quaternion(0.794148, 0.0398359, -0.158571, 0.585319)
 bones/39/position = Vector3(2.15113e-05, 252.483, 1.39077e-05)
 bones/39/rotation = Quaternion(0.381645, 0.0522805, -0.0119141, 0.922752)
 bones/40/position = Vector3(-8.76188e-06, 103.292, -2.12193e-05)
-
-[node name="Freddy Fazbear" parent="Freddy/Armature/Skeleton3D" index="0"]
-surface_material_override/0 = SubResource("StandardMaterial3D_hps1a")
 
 [node name="AnimationPlayer" parent="Freddy" index="1"]
 autoplay = "Armature|mixamo_com|Layer0"
