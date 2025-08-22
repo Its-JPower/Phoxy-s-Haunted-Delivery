@@ -7,6 +7,10 @@ extends Node3D
 @export var enemy_scene : PackedScene
 @onready var LEVEL_START_AUDIO = preload("res://Assets/Audio/level_start.mp3")
 
+# Cached values for optimization
+var _spawn_positions_cache: Array[Vector3] = []
+var _enemies_spawned: int = 0
+
 func _ready():
 	if not validate_setup():
 		return
@@ -14,245 +18,274 @@ func _ready():
 	print("Initializing level...")
 	maze_generator.generate_maze()
 	
-	# Debug the maze structure around spawn
-	maze_generator.debug_spawn_area()
-	
 	# Wait for navigation to be ready
-	print("Waiting for navigation mesh...")
-	await get_tree().create_timer(1.0).timeout
+	await wait_for_navigation()
 	
-	# Check if navigation is actually ready
-	var nav_region = maze_generator.get_navigation_region()
-	if nav_region and nav_region.navigation_mesh and nav_region.navigation_mesh.get_vertices().size() > 0:
-		print("Navigation mesh ready with ", nav_region.navigation_mesh.get_vertices().size(), " vertices")
-	else:
-		print("WARNING: Navigation mesh may not be ready!")
-	
+	# Spawn everything
 	await spawn_player()
+	await spawn_initial_enemies()
+	spawn_secret_room_enemies()
 	
-	print("Attempting to spawn enemies...")
-	var enemy_count = await spawn_enemies(1)
-	print("Successfully spawned ", enemy_count, " enemies")
-	
-	spawn_enemies_in_secret_rooms()
-	print("Level ready!")
+	print("Level ready! Enemies spawned: ", _enemies_spawned)
 
 func validate_setup() -> bool:
-	if not maze_generator:
-		print("ERROR: No maze generator!")
-		return false
-	if not player:
-		print("ERROR: No player assigned!")
-		return false
-	if not enemy_scene:
-		print("ERROR: No enemy scene assigned!")
+	var issues = []
+	if not maze_generator: issues.append("No maze generator")
+	if not player: issues.append("No player assigned")
+	if not enemy_scene: issues.append("No enemy scene assigned")
+	
+	if issues.size() > 0:
+		print("ERROR: Setup validation failed: ", ", ".join(issues))
 		return false
 	return true
 
+func wait_for_navigation():
+	print("Waiting for navigation mesh...")
+	var max_wait_time = 3.0
+	var wait_time = 0.0
+	var check_interval = 0.1
+	
+	while wait_time < max_wait_time:
+		await get_tree().create_timer(check_interval).timeout
+		wait_time += check_interval
+		
+		var nav_region = maze_generator.get_navigation_region()
+		if nav_region and nav_region.navigation_mesh and nav_region.navigation_mesh.get_vertices().size() > 0:
+			print("Navigation mesh ready with ", nav_region.navigation_mesh.get_vertices().size(), " vertices")
+			return
+	
+	print("WARNING: Navigation mesh not ready after ", max_wait_time, " seconds!")
+
 func spawn_player():
-	var spawn_pos = await maze_generator.get_guaranteed_safe_spawn_position()
-	spawn_pos.y = 3.0  # Ensure player spawns 3 units above floor
+	var spawn_pos = maze_generator.get_player_spawn_position()
 	player.global_position = spawn_pos
 	print("Player spawned at: ", spawn_pos)
 	
-	# Wait a moment and check final position
-	await get_tree().create_timer(0.5).timeout
-	print("Player position after settling: ", player.global_position)
+	# Cache spawn positions for enemies after player is positioned
+	_spawn_positions_cache = maze_generator.get_possible_spawn_positions()
+	print("Cached ", _spawn_positions_cache.size(), " possible enemy spawn positions")
 
-func spawn_enemies(count: int) -> int:
-	print("Getting safe enemy positions for ", count, " enemies...")
-	var safe_positions = get_safe_enemy_positions(count)
-	print("Found ", safe_positions.size(), " safe positions")
+func spawn_enemies_optimized(count: int) -> int:
+	if _spawn_positions_cache.is_empty():
+		print("ERROR: No cached spawn positions available!")
+		return await emergency_spawn_enemies(count)
 	
-	if safe_positions.size() == 0:
-		print("ERROR: No safe enemy spawn positions found!")
-		# Try emergency spawn
+	var suitable_positions = get_suitable_enemy_positions(count)
+	if suitable_positions.is_empty():
+		print("No suitable positions found, trying emergency spawn")
 		return await emergency_spawn_enemies(count)
 	
 	var spawned_count = 0
-	for i in range(safe_positions.size()):
-		var pos = safe_positions[i]
-		print("Attempting to spawn enemy ", i + 1, " at ", pos)
-		var success = await spawn_enemy_at(pos)
-		if success:
+	for position in suitable_positions:
+		if await spawn_enemy_at_position(position):
 			spawned_count += 1
-		await get_tree().create_timer(0.1).timeout
 	
 	return spawned_count
 
-func get_safe_enemy_positions(count: int) -> Array[Vector3]:
-	var positions: Array[Vector3] = []
+func is_too_close_to_existing(pos: Vector3, existing_positions: Array[Vector3], min_distance: float) -> bool:
+	for existing_pos in existing_positions:
+		if pos.distance_to(existing_pos) < min_distance:
+			return true
+	return false
+
+func spawn_enemy_at_position(world_pos: Vector3) -> bool:
+	if not enemy_scene:
+		print("ERROR: No enemy scene available")
+		return false
 	
-	print("Getting enemy spawn positions...")
+	var enemy = enemy_scene.instantiate()
+	if not enemy:
+		print("ERROR: Failed to instantiate enemy")
+		return false
 	
-	# Just get all possible positions and filter by distance
-	var all_positions = maze_generator.get_possible_spawn_positions()
-	print("Found ", all_positions.size(), " total possible positions")
+	# Ensure proper spawn height
+	world_pos.y = 3.0
+	enemy.global_position = world_pos
+	enemy.add_to_group("Enemies")
+	add_child(enemy)
 	
-	# Sort positions by distance from player (farthest first)
-	var positions_with_distance = []
-	for world_pos in all_positions:
-		if player:
-			var distance = world_pos.distance_to(player.global_position)
-			positions_with_distance.append({"pos": world_pos, "distance": distance})
+	# Wait for enemy to settle in scene
+	await get_tree().process_frame
 	
-	# Sort by distance (farthest first)
-	positions_with_distance.sort_custom(func(a, b): return a.distance > b.distance)
+	# Configure navigation
+	configure_enemy_navigation(enemy)
 	
-	print("Checking positions from farthest to nearest...")
-	
-	# Take the farthest positions that are reasonable
-	for item in positions_with_distance:
-		var world_pos = item.pos
-		var distance = item.distance
-		
-		# Only consider positions that are reasonably far
-		if distance < 15.0:  # Must be at least 15 units away
-			print("Position too close: ", world_pos, " distance: ", distance)
-			continue
-		
-		# Skip if too close to existing enemies
-		var too_close_to_enemy = false
-		for existing in positions:
-			if world_pos.distance_to(existing) < 8.0:
-				too_close_to_enemy = true
-				break
-		if too_close_to_enemy:
-			continue
-		
-		print("Accepting position: ", world_pos, " distance from player: ", distance)
-		positions.append(world_pos)
-		
-		if positions.size() >= count:
-			break
-	
-	# If no positions found, try with smaller distance requirement
-	if positions.size() == 0:
-		print("No far positions found, trying with smaller distance...")
-		for item in positions_with_distance:
-			var world_pos = item.pos
-			var distance = item.distance
-			
-			if distance < 8.0:  # At least 8 units away
-				continue
-			
-			print("Accepting backup position: ", world_pos, " distance: ", distance)
-			positions.append(world_pos)
-			
-			if positions.size() >= count:
-				break
-	
-	print("Final enemy positions: ", positions.size(), " found")
-	return positions
+	return true
 
 func emergency_spawn_enemies(count: int) -> int:
-	print("Attempting emergency enemy spawn...")
+	print("Emergency enemy spawn for ", count, " enemies")
 	if not player:
-		print("No player for emergency spawn!")
 		return 0
 	
 	var spawned_count = 0
+	var player_pos = player.global_position
+	
 	for i in range(count):
-		# Spawn near player but offset
-		var offset = Vector3(randf_range(-5, 5), 0, randf_range(-5, 5))
-		var spawn_pos = player.global_position + offset
+		# Create spawn position in a circle around player
+		var angle = (float(i) / count) * TAU
+		var distance = 10.0 + randf() * 5.0  # 10-15 units away
+		var offset = Vector3(cos(angle) * distance, 0, sin(angle) * distance)
+		var spawn_pos = player_pos + offset
 		spawn_pos.y = 3.0
 		
-		print("Emergency spawn attempt at: ", spawn_pos)
-		var success = await spawn_enemy_at(spawn_pos)
-		if success:
+		if await spawn_enemy_at_position(spawn_pos):
 			spawned_count += 1
 	
 	return spawned_count
 
-func spawn_enemy_at(world_pos: Vector3) -> bool:
-	print("spawn_enemy_at called with position: ", world_pos)
-	
-	if not enemy_scene:
-		print("ERROR: enemy_scene is null!")
-		return false
-	
-	print("Instantiating enemy scene...")
-	var enemy = enemy_scene.instantiate()
-	if not enemy:
-		print("ERROR: Failed to instantiate enemy scene!")
-		return false
-	
-	print("Enemy instantiated successfully, type: ", enemy.get_class())
-	
-	# Use the position directly (it's already been validated)
-	world_pos.y = 3.0  # Ensure proper spawn height
-	
-	print("Setting enemy position to: ", world_pos)
-	enemy.global_position = world_pos
-	enemy.add_to_group("Enemies")
-	
-	print("Adding enemy to scene tree...")
-	add_child(enemy)
-	
-	# Verify enemy was added
-	var enemies_in_scene = get_tree().get_nodes_in_group("Enemies")
-	print("Enemies in scene after adding: ", enemies_in_scene.size())
-	
-	await get_tree().process_frame
-	
-	# Check enemy position after physics frame
-	print("Enemy position after physics frame: ", enemy.global_position)
-	
-	# Configure navigation if enemy has NavigationAgent3D
-	var nav_agent = enemy.get_node_or_null("NavigationAgent3D")
-	if nav_agent:
-		print("Configuring enemy navigation agent...")
-		await maze_generator.setup_navigation_agent_for_maze(nav_agent)
-		
-		# Set initial target to player
-		if player:
-			nav_agent.target_position = player.global_position
-			print("Set enemy target to player position: ", player.global_position)
-	else:
-		print("WARNING: Enemy has no NavigationAgent3D node!")
-	
-	print("Enemy spawned successfully at: ", world_pos)
-	return true
-
-func spawn_enemies_in_secret_rooms():
-	if not enemy_scene:
-		return
-	
+func spawn_secret_room_enemies():
 	var secret_rooms = maze_generator.get_secret_room_positions()
+	var spawned_in_secrets = 0
+	
 	for room_pos in secret_rooms:
 		var world_pos = maze_generator.grid_to_world(room_pos) + Vector3(0, 3.0, 0)
-		await spawn_enemy_at(world_pos)
+		if await spawn_enemy_at_position(world_pos):
+			spawned_in_secrets += 1
+	
+	_enemies_spawned += spawned_in_secrets
+	print("Spawned ", spawned_in_secrets, " enemies in secret rooms")
 
-# Debug controls
+# Optimized debug controls
 func _input(event):
-	if event.is_action_pressed("ui_page_up"):
+	if not event.is_pressed():
+		return
+	
+	if event.is_action("ui_page_up"):
 		debug_level()
-	elif event.is_action_pressed("ui_page_down"):
-		respawn_enemies()
+	elif event.is_action("ui_page_down"):
+		respawn_all_enemies()
+	elif event.is_action("ui_home"):  # Additional debug key
+		teleport_player_to_spawn()
 
 func debug_level():
 	print("=== LEVEL DEBUG ===")
 	print("Player: ", player.global_position if player else "None")
-	print("Enemies: ", get_tree().get_nodes_in_group("Enemies").size())
 	
-	# Debug spawn area
-	maze_generator.debug_spawn_area()
+	var enemies = get_tree().get_nodes_in_group("Enemies")
+	print("Enemies: ", enemies.size())
 	
-	# Debug navigation
-	maze_generator.debug_navigation_setup()
-	
-	# Test if player position is safe
 	if player:
-		var player_2d = Vector2(player.global_position.x, player.global_position.z)
-		var spawn_world_2d = Vector2(maze_generator.grid_to_world(Vector2i(1, 1)).x, maze_generator.grid_to_world(Vector2i(1, 1)).z)
-		print("Player 2D distance from expected spawn: ", player_2d.distance_to(spawn_world_2d))
+		var expected_spawn = maze_generator.get_player_spawn_position()
+		var distance_from_spawn = player.global_position.distance_to(expected_spawn)
+		print("Player distance from expected spawn: ", distance_from_spawn)
+	
+	# Test navigation
+	var nav_region = maze_generator.get_navigation_region()
+	if nav_region and nav_region.navigation_mesh:
+		print("Navigation vertices: ", nav_region.navigation_mesh.get_vertices().size())
+		print("Navigation polygons: ", nav_region.navigation_mesh.get_polygon_count())
+	else:
+		print("WARNING: No navigation mesh found!")
+	
+	# Test enemy positions
+	for i in range(min(3, enemies.size())):
+		var enemy = enemies[i]
+		var nav_agent = enemy.get_node_or_null("NavigationAgent3D")
+		if nav_agent:
+			print("Enemy ", i, " at ", enemy.global_position, " target: ", nav_agent.target_position)
 
-func respawn_enemies():
+func respawn_all_enemies():
+	print("Respawning all enemies...")
+	
 	# Remove existing enemies
 	var enemies = get_tree().get_nodes_in_group("Enemies")
 	for enemy in enemies:
 		enemy.queue_free()
+	
 	await get_tree().process_frame
+	_enemies_spawned = 0
+	
 	# Respawn
-	await spawn_enemies(1)
+	await spawn_initial_enemies()
+	spawn_secret_room_enemies()
+
+func teleport_player_to_spawn():
+	if player:
+		var spawn_pos = maze_generator.get_player_spawn_position()
+		player.global_position = spawn_pos
+		print("Player teleported to spawn: ", spawn_pos)
+
+# Utility functions for external access
+func get_enemy_count() -> int:
+	return get_tree().get_nodes_in_group("Enemies").size()
+
+func get_player_position() -> Vector3:
+	return player.global_position if player else Vector3.ZERO
+
+func spawn_additional_enemy() -> bool:
+	var positions = get_suitable_enemy_positions(1)
+	if positions.size() > 0:
+		return await spawn_enemy_at_position(positions[0])
+	return false
+
+
+# Key changes to make in your LevelManager.gd:
+
+# 1. Make enemy count configurable (line 46):
+@export var enemy_count: int = 3  # Now configurable in inspector
+
+func spawn_initial_enemies():
+	var spawned = await spawn_enemies_optimized(enemy_count)
+	_enemies_spawned += spawned
+	print("Spawned ", spawned, "/", enemy_count, " initial enemies")
+
+# 2. Improve the enemy configuration (replace configure_enemy_navigation function):
+func configure_enemy_navigation(enemy: Node3D):
+	var nav_agent = enemy.get_node_or_null("NavigationAgent3D")
+	if not nav_agent:
+		return
+	
+	# Use the improved maze-specific setup
+	if maze_generator.has_method("setup_navigation_agent_for_maze"):
+		maze_generator.setup_navigation_agent_for_maze(nav_agent)
+	else:
+		# Fallback configuration
+		nav_agent.radius = 0.3
+		nav_agent.height = 2.0
+		nav_agent.path_desired_distance = 0.2
+		nav_agent.target_desired_distance = 0.8
+		nav_agent.path_max_distance = 100.0
+		nav_agent.avoidance_enabled = true
+		nav_agent.neighbor_distance = 1.5
+		nav_agent.max_neighbors = 2
+		nav_agent.time_horizon = 1.0
+	
+	print("Configured navigation agent for enemy with radius: ", nav_agent.radius)
+
+# 3. Improve enemy spawn positioning (replace get_suitable_enemy_positions):
+func get_suitable_enemy_positions(count: int) -> Array[Vector3]:
+	var positions: Array[Vector3] = []
+	var player_pos = player.global_position
+	
+	# Get all possible positions and filter them better
+	var all_positions = _spawn_positions_cache.duplicate()
+	var suitable_positions: Array[Vector3] = []
+	
+	# First pass: find positions that meet basic requirements
+	for pos in all_positions:
+		var distance_to_player = pos.distance_to(player_pos)
+		
+		# Must be reasonably far from player but not too far
+		if distance_to_player >= 8.0 and distance_to_player <= 40.0:
+			suitable_positions.append(pos)
+	
+	if suitable_positions.is_empty():
+		print("No suitable positions found, relaxing constraints...")
+		# Fallback: accept closer positions
+		for pos in all_positions:
+			var distance_to_player = pos.distance_to(player_pos)
+			if distance_to_player >= 5.0:
+				suitable_positions.append(pos)
+	
+	# Sort by distance from player (farthest first for initial spawn)
+	suitable_positions.sort_custom(func(a, b): return a.distance_to(player_pos) > b.distance_to(player_pos))
+	
+	# Select positions ensuring they're not too close to each other
+	for pos in suitable_positions:
+		if not is_too_close_to_existing(pos, positions, 6.0):
+			positions.append(pos)
+			if positions.size() >= count:
+				break
+	
+	print("Selected ", positions.size(), " suitable enemy positions out of ", suitable_positions.size(), " candidates")
+	return positions

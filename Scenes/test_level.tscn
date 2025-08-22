@@ -1,9 +1,20 @@
-[gd_scene load_steps=5 format=3 uid="uid://c77helscbjrhf"]
+[gd_scene load_steps=10 format=3 uid="uid://c77helscbjrhf"]
 
 [ext_resource type="Script" uid="uid://cpferq8d1hs6h" path="res://MazeGenerator3D.gd" id="1_eglq2"]
 [ext_resource type="Script" uid="uid://by3qww21fvn" path="res://Scenes/test_level.gd" id="1_rsyfn"]
+[ext_resource type="Texture2D" uid="uid://btg7l1ev1rfpo" path="res://Assets/textures/wall_texture.jpg" id="4_btda1"]
 [ext_resource type="PackedScene" uid="uid://u3k6kqv5qe3t" path="res://Scenes/newplayer.tscn" id="5_7w7ni"]
+[ext_resource type="Texture2D" uid="uid://c64jl26xvktw1" path="res://Assets/textures/floor.jpg" id="5_xq3o0"]
 [ext_resource type="PackedScene" uid="uid://dsv7sw3idon4b" path="res://Scenes/Freddy.tscn" id="6_btda1"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2yvf5"]
+albedo_texture = ExtResource("4_btda1")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3ihge"]
+albedo_texture = ExtResource("5_xq3o0")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_akkqd"]
+albedo_texture = ExtResource("5_xq3o0")
 
 [node name="Test level" type="Node3D" node_paths=PackedStringArray("player")]
 script = ExtResource("1_rsyfn")
@@ -12,6 +23,9 @@ enemy_scene = ExtResource("6_btda1")
 
 [node name="MazeGenerator3D" type="Node3D" parent="."]
 script = ExtResource("1_eglq2")
+wall_material = SubResource("StandardMaterial3D_2yvf5")
+floor_material = SubResource("StandardMaterial3D_3ihge")
+secret_floor_material = SubResource("StandardMaterial3D_akkqd")
 metadata/_custom_type_script = "uid://cpferq8d1hs6h"
 
 [node name="NewPlayerCharacter" parent="." instance=ExtResource("5_7w7ni")]

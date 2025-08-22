@@ -117,12 +117,16 @@ shape = SubResource("CapsuleShape3D_w06hg")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 
 [node name="Area3D" type="Area3D" parent="."]
+visible = false
 collision_layer = 2
 collision_mask = 2
+monitoring = false
+monitorable = false
 
 [node name="raycastDETECT" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00954866, 2.32881, 0)
 shape = SubResource("BoxShape3D_mn02b")
+disabled = true
 
 [node name="FootstepTimer" type="Timer" parent="."]
 wait_time = 0.2
@@ -133,6 +137,7 @@ autostart = true
 stream = ExtResource("4_hps1a")
 
 [node name="PlayerDetection" type="Area3D" parent="."]
+visible = false
 collision_layer = 4
 collision_mask = 2
 monitoring = false
