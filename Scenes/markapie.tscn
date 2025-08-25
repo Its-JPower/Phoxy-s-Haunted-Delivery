@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bkqmpls5vdtee"]
+
+[ext_resource type="Texture2D" uid="uid://d2t152ccp3rdp" path="res://Assets/images/best at handball.jpg" id="1_17m0l"]
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+texture = ExtResource("1_17m0l")

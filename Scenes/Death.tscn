@@ -1,10 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://cygbue7swmavf"]
+[gd_scene load_steps=14 format=3 uid="uid://cygbue7swmavf"]
 
 [ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scripts/main_menu.gd" id="1_6nwb2"]
+[ext_resource type="Texture2D" uid="uid://d2t152ccp3rdp" path="res://Assets/images/best at handball.jpg" id="3_pl6eg"]
 [ext_resource type="AudioStream" uid="uid://danf85ai5dbe4" path="res://Assets/Sound/Fnaf Freddys Death Song.mp3" id="4_6poc4"]
 [ext_resource type="PackedScene" uid="uid://bt7m76wucu7a6" path="res://Assets/Other/fnafpizzeria.glb" id="4_8tvvv"]
 [ext_resource type="PackedScene" uid="uid://bl7tlvrwidnmb" path="res://Scenes/menuui.tscn" id="5_8u8gh"]
-[ext_resource type="PackedScene" uid="uid://b5nr2uctspa8" path="res://Assets/Enemies/golden freddy head.glb" id="5_prkst"]
+[ext_resource type="PackedScene" uid="uid://bhgrvq3l6vm33" path="res://Assets/Enemies/HEAD golden.glb" id="5_prkst"]
+[ext_resource type="PackedScene" uid="uid://bkqmpls5vdtee" path="res://Scenes/markapie.tscn" id="7_7qohy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -15,10 +17,13 @@ sky_material = SubResource("ProceduralSkyMaterial_ce3w2")
 
 [sub_resource type="Environment" id="Environment_opfnp"]
 background_mode = 1
-background_color = Color(0.340443, 0.000205651, 0.0883829, 1)
+background_color = Color(0.536866, 0, 0.0854703, 1)
 sky = SubResource("Sky_n45e2")
 tonemap_mode = 2
 glow_enabled = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8tvvv"]
+albedo_texture = ExtResource("3_pl6eg")
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_n45e2"]
 
@@ -56,7 +61,7 @@ wait_time = 5.0
 autostart = true
 
 [node name="Light" type="OmniLight3D" parent="Background"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.40152, 1.40822, 3.42775)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.70152, 1.20822, 13.7277)
 light_color = Color(0.524822, 0.129809, 0.0343147, 1)
 shadow_enabled = true
 
@@ -69,6 +74,7 @@ size = Vector3(4.69244, 0.346924, 4.29321)
 
 [node name="roof" type="MeshInstance3D" parent="Background"]
 transform = Transform3D(14.4006, 0, 0, 0, -0.218534, 0, 0, 0, -11.5744, -0.405151, 1.85394, 4.49105)
+material_override = SubResource("StandardMaterial3D_8tvvv")
 mesh = SubResource("PlaneMesh_n45e2")
 surface_material_override/0 = SubResource("StandardMaterial3D_opfnp")
 
@@ -76,7 +82,7 @@ surface_material_override/0 = SubResource("StandardMaterial3D_opfnp")
 mouse_filter = 2
 
 [node name="Label" parent="Menu/MarginContainer/VBoxContainer" index="0"]
-text = "Death"
+text = "You Died"
 
 [node name="btn_play" parent="Menu/MarginContainer/VBoxContainer" index="3"]
 text = "Play Again"
@@ -84,9 +90,13 @@ text = "Play Again"
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("4_6poc4")
 autoplay = true
+parameters/looping = true
 
-[node name="golden freddy head" parent="." instance=ExtResource("5_prkst")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, -14, 4)
+[node name="HEAD golden" parent="." instance=ExtResource("5_prkst")]
+transform = Transform3D(0.173205, 0, -0.1, 0, 0.2, 0, 0.1, 0, 0.173205, -0.2, -0.6, 12.2)
+
+[node name="Node3D" parent="." instance=ExtResource("7_7qohy")]
+transform = Transform3D(-6.55671e-09, 0, 0.15, 0, 0.15, 0, -0.15, 0, -6.55671e-09, -3.7519, 0, 14.5379)
 
 [connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_entered"]
 [connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_exited"]
