@@ -5,120 +5,63 @@ extends CharacterBody3D
 @onready var anim_player: AnimationPlayer = $Freddy/AnimationPlayer
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 
-@export var speed = 3.5
+@export var speed = 6.0  # Faster when not observed
 @export var gravity = -20.0
-@export var path_update_interval = 0.5  # How often to recalculate path
+@export var vision_check_distance = 50.0  # How far to check for player vision
+@export var freeze_when_observed = true
 
 var target: CharacterBody3D
-var path_update_timer = 0.0
 var navigation_ready = false
-var maze_generator: MazeGenerator3D
+var is_being_observed = false
+var player_camera: Camera3D
 
-# Improved stuck detection
-var position_history: Array[Vector3] = []
-var stuck_threshold = 0.5  # Minimum movement in stuck_check_time
-var stuck_check_time = 2.0
-var last_stuck_check_time = 0.0
-
-# Path following
-var current_path: PackedVector3Array = []
-var path_index = 0
-var waypoint_reached_distance = 1.0
+# Visual feedback
+var statue_material: Material
+var normal_material: Material
 
 func _ready():
 	add_to_group("Enemies")
-	print("Enemy spawned at position: ", global_position)
+	print("Weeping Angel spawned at position: ", global_position)
 	
-	# Find the maze generator
-	maze_generator = get_tree().get_first_node_in_group("MazeGenerator")
-	if not maze_generator:
-		maze_generator = find_parent("*").find_child("MazeGenerator3D", true, false)
-	
-	# Configure navigation agent for maze navigation
 	if navigation_agent:
-		navigation_agent.radius = 0.4  # Smaller radius for tighter spaces
+		navigation_agent.radius = 0.4
 		navigation_agent.height = 2.0
-		navigation_agent.path_desired_distance = 0.3
-		navigation_agent.target_desired_distance = 1.0
-		navigation_agent.path_max_distance = 50.0  # Allow longer paths through maze
-		navigation_agent.avoidance_enabled = true
-		navigation_agent.neighbor_distance = 2.0
-		navigation_agent.max_neighbors = 2
-		navigation_agent.time_horizon = 1.0
-		
-		# Connect signals
-		navigation_agent.navigation_finished.connect(_on_navigation_finished)
-		navigation_agent.target_reached.connect(_on_target_reached)
-		navigation_agent.velocity_computed.connect(_on_velocity_computed)
-		
-		print("Navigation agent configured for maze")
+		navigation_agent.path_desired_distance = 0.8
+		navigation_agent.target_desired_distance = 2.0
+		navigation_agent.avoidance_enabled = false
+		print("Navigation agent configured")
 	
-	# Setup navigation after scene is ready
 	call_deferred("setup_navigation")
 
 func setup_navigation():
-	# Wait for navigation to be fully ready
-	for i in range(5):
-		await get_tree().physics_frame
+	await get_tree().create_timer(2.0).timeout
 	
 	target = get_tree().get_first_node_in_group("Player")
 	if not target:
 		print("ERROR: No player found!")
 		return
 	
-	print("Enemy found player at: ", target.global_position)
+	# Find player's camera
+	player_camera = target.get_node("CameraController/Camera3D")  # Adjust path as needed
+	if not player_camera:
+		print("WARNING: No player camera found for vision detection")
 	
-	# Validate and adjust starting position
-	var safe_position = find_nearest_navigation_point(global_position)
-	if safe_position != global_position:
-		global_position = safe_position
-		print("Adjusted enemy position to: ", safe_position)
-	
+	print("Weeping Angel targeting player at: ", target.global_position)
 	navigation_ready = true
-	
-	# Start position tracking
-	position_history.clear()
-	position_history.append(global_position)
-
-func find_nearest_navigation_point(pos: Vector3) -> Vector3:
-	"""Find the nearest valid point on the navigation mesh"""
-	if not navigation_agent or not navigation_agent.get_navigation_map().is_valid():
-		return pos
-	
-	var nav_map = navigation_agent.get_navigation_map()
-	var closest_point = NavigationServer3D.map_get_closest_point(nav_map, pos)
-	
-	# If the closest point is too far, try to find a better one
-	if pos.distance_to(closest_point) > 2.0:
-		print("Position too far from nav mesh, searching for better position...")
-		
-		if maze_generator:
-			var spawn_positions = maze_generator.get_possible_spawn_positions()
-			var best_position = pos
-			var best_distance = INF
-			
-			for spawn_pos in spawn_positions:
-				var distance = pos.distance_to(spawn_pos)
-				if distance < best_distance:
-					var nav_closest = NavigationServer3D.map_get_closest_point(nav_map, spawn_pos)
-					if spawn_pos.distance_to(nav_closest) < 1.0:  # Good nav mesh coverage
-						best_distance = distance
-						best_position = spawn_pos
-			
-			return best_position
-	
-	return closest_point
+	update_target()
 
 func _physics_process(delta):
-	# Handle freeze
 	if Global.freeze:
 		handle_freeze()
 		return
 	else:
 		handle_unfreeze()
 	
-	if not target or not navigation_ready:
+	if not navigation_ready or not target:
 		return
+	
+	# Check if being observed by player
+	check_if_observed()
 	
 	# Apply gravity
 	if not is_on_floor():
@@ -126,190 +69,148 @@ func _physics_process(delta):
 	else:
 		velocity.y = 0
 	
-	# Update position history for stuck detection
-	update_position_tracking(delta)
-	
-	# Update navigation path periodically
-	path_update_timer += delta
-	if path_update_timer >= path_update_interval:
-		path_update_timer = 0.0
-		update_navigation_target()
-	
-	# Move using navigation
-	navigate_to_target(delta)
+	# Only move if not being observed
+	if not is_being_observed:
+		update_target()
+		navigate_to_target()
+	else:
+		# Freeze in place when observed
+		velocity.x = 0
+		velocity.z = 0
+		# Play statue pose animation
+		if anim_player and anim_player.current_animation != "statue_pose":
+			anim_player.play("statue_pose")  # You'll need to create this animation
 	
 	move_and_slide()
-	handle_footsteps()
-
-func update_position_tracking(delta):
-	"""Track position history for improved stuck detection"""
-	last_stuck_check_time += delta
 	
-	if last_stuck_check_time >= 0.5:  # Update every 0.5 seconds
-		position_history.append(global_position)
-		
-		# Keep only recent positions (last 4 seconds)
-		var max_history = int(stuck_check_time / 0.5)
-		if position_history.size() > max_history:
-			position_history.pop_front()
-		
-		# Check if stuck
-		if position_history.size() >= max_history:
-			check_if_really_stuck()
-		
-		last_stuck_check_time = 0.0
+	# Only play footsteps when moving and not observed
+	if not is_being_observed:
+		handle_footsteps()
 
-func check_if_really_stuck():
-	"""Improved stuck detection using position history"""
-	if position_history.size() < 2:
+func check_if_observed():
+	if not player_camera or not target:
+		is_being_observed = false
 		return
 	
-	var oldest_position = position_history[0]
-	var current_position = position_history[-1]
-	var total_movement = oldest_position.distance_to(current_position)
+	var was_observed = is_being_observed
+	is_being_observed = false
 	
-	if total_movement < stuck_threshold:
-		print("Enemy is stuck! Total movement: ", total_movement, " in ", stuck_check_time, " seconds")
-		attempt_unstuck()
-
-func attempt_unstuck():
-	"""Smart unstuck that respects navigation mesh"""
-	print("Attempting to unstuck enemy...")
-	
-	if not navigation_agent or not navigation_agent.get_navigation_map().is_valid():
+	# Check distance first
+	var distance_to_player = global_position.distance_to(target.global_position)
+	if distance_to_player > vision_check_distance:
+		update_visual_state(was_observed)
 		return
 	
-	var nav_map = navigation_agent.get_navigation_map()
+	# Check if enemy is in camera's view frustum
+	if is_in_camera_view():
+		# Check if there's line of sight (no walls blocking)
+		if has_line_of_sight_to_player():
+			is_being_observed = true
 	
-	# Try to find a nearby valid navigation point
-	var search_positions = [
-		global_position + Vector3(1, 0, 0),
-		global_position + Vector3(-1, 0, 0),
-		global_position + Vector3(0, 0, 1),
-		global_position + Vector3(0, 0, -1),
-		global_position + Vector3(1, 0, 1),
-		global_position + Vector3(-1, 0, -1),
-		global_position + Vector3(1, 0, -1),
-		global_position + Vector3(-1, 0, 1)
-	]
-	
-	for test_pos in search_positions:
-		var nav_point = NavigationServer3D.map_get_closest_point(nav_map, test_pos)
-		
-		# Check if this point is actually accessible
-		if test_pos.distance_to(nav_point) < 0.5 and is_path_clear_to_position(nav_point):
-			global_position = nav_point
-			velocity = Vector3.ZERO
-			position_history.clear()
-			position_history.append(global_position)
-			
-			# Recalculate path immediately
-			call_deferred("update_navigation_target")
-			print("Successfully unstuck to position: ", nav_point)
-			return
-	
-	print("Could not find suitable unstuck position")
+	update_visual_state(was_observed)
 
-func is_path_clear_to_position(pos: Vector3) -> bool:
-	"""Check if we can move to a position without hitting walls"""
+func is_in_camera_view() -> bool:
+	if not player_camera:
+		return false
+	
+	# Get camera's transform
+	var camera_transform = player_camera.global_transform
+	var camera_pos = camera_transform.origin
+	var camera_forward = -camera_transform.basis.z
+	
+	# Vector from camera to enemy
+	var to_enemy = (global_position - camera_pos).normalized()
+	
+	# Check if enemy is in front of camera
+	var dot_product = camera_forward.dot(to_enemy)
+	if dot_product < 0.3:  # Roughly 70-degree field of view
+		return false
+	
+	# Use camera's built-in frustum check for more accuracy
+	var enemy_aabb = AABB(global_position - Vector3.ONE, Vector3.ONE * 2)
+	return player_camera.is_position_in_frustum(global_position)
+
+func has_line_of_sight_to_player() -> bool:
+	if not target:
+		return false
+	
 	var space_state = get_world_3d().direct_space_state
-	var from = global_position + Vector3(0, 0.5, 0)
-	var to = pos + Vector3(0, 0.5, 0)
+	var from = global_position + Vector3(0, 1.0, 0)  # Enemy eye level
+	var to = target.global_position + Vector3(0, 1.0, 0)  # Player eye level
 	
 	var query = PhysicsRayQueryParameters3D.create(from, to)
 	query.collision_mask = 1  # Wall collision layer
-	query.exclude = [self]
+	query.exclude = [self, target]
 	
 	var result = space_state.intersect_ray(query)
-	return result.is_empty()
+	return result.is_empty()  # True if no walls blocking
 
-func update_navigation_target():
-	"""Update the navigation agent's target position"""
+func update_visual_state(was_observed: bool):
+	# Change appearance when observed/not observed
+	if is_being_observed != was_observed:
+		if is_being_observed:
+			print("Weeping Angel frozen - being observed!")
+			# Change to statue material/pose
+			apply_statue_appearance()
+		else:
+			print("Weeping Angel free to move")
+			# Change back to normal appearance
+			apply_normal_appearance()
+
+func apply_statue_appearance():
+	# Change material to stone-like appearance
+	var mesh_instance = $Freddy/MeshInstance3D  # Adjust path
+	if mesh_instance and statue_material:
+		mesh_instance.set_surface_override_material(0, statue_material)
+	
+	# Stop movement animations
+	if anim_player:
+		anim_player.play("statue_pose")
+
+func apply_normal_appearance():
+	# Restore normal material
+	var mesh_instance = $Freddy/MeshInstance3D  # Adjust path
+	if mesh_instance:
+		mesh_instance.set_surface_override_material(0, normal_material)
+	
+	# Resume normal animations
+	if anim_player:
+		anim_player.play("walk")  # Or whatever your normal animation is
+
+func update_target():
 	if not navigation_agent or not target:
 		return
 	
-	if not navigation_agent.get_navigation_map().is_valid():
-		print("Navigation map not valid")
-		return
-	
-	var target_pos = target.global_position
-	
-	# Ensure target is on navigation mesh
-	var nav_map = navigation_agent.get_navigation_map()
-	var nav_target = NavigationServer3D.map_get_closest_point(nav_map, target_pos)
-	
-	# Only update if target has moved significantly or we don't have a target
-	var current_target = navigation_agent.target_position
-	if current_target.distance_to(nav_target) > 1.0 or navigation_agent.is_navigation_finished():
-		navigation_agent.target_position = nav_target
-		print("Updated navigation target to: ", nav_target, " (player at: ", target_pos, ")")
+	navigation_agent.target_position = target.global_position
 
-func navigate_to_target(delta):
-	"""Main navigation movement function"""
+func navigate_to_target():
 	if not navigation_agent:
 		return
 	
-	# Check if we have a valid path
 	if navigation_agent.is_navigation_finished():
-		# No path available, try to get a new one
-		update_navigation_target()
+		velocity.x = 0
+		velocity.z = 0
 		return
 	
-	# Get next position in path
-	var next_path_position = navigation_agent.get_next_path_position()
-	var direction_to_next = (next_path_position - global_position)
-	direction_to_next.y = 0  # Keep movement horizontal
+	var next_position = navigation_agent.get_next_path_position()
+	var direction = (next_position - global_position).normalized()
+	direction.y = 0
 	
-	var distance_to_next = direction_to_next.length()
+	# Move faster when not observed
+	var current_speed = speed
+	if is_being_observed:
+		current_speed = 0  # Completely stop when observed
 	
-	# Move towards next waypoint
-	if distance_to_next > navigation_agent.path_desired_distance:
-		direction_to_next = direction_to_next.normalized()
-		
-		# Calculate desired velocity
-		var desired_velocity = direction_to_next * speed
-		
-		# Use navigation agent's avoidance system
-		navigation_agent.set_velocity(desired_velocity)
-	else:
-		# Close to waypoint, slow down
-		var slow_velocity = velocity * 0.5
-		slow_velocity.y = 0
-		navigation_agent.set_velocity(slow_velocity)
-
-func _on_velocity_computed(safe_velocity: Vector3):
-	"""Handle the velocity computed by navigation agent"""
-	# Apply the safe velocity
-	velocity.x = safe_velocity.x
-	velocity.z = safe_velocity.z
+	velocity.x = direction.x * current_speed
+	velocity.z = direction.z * current_speed
 	
-	# Rotate to face movement direction
-	if safe_velocity.length() > 0.1:
-		var look_direction = Vector3(safe_velocity.x, 0, safe_velocity.z).normalized()
-		var look_target = global_position + look_direction
-		var target_transform = transform.looking_at(look_target, Vector3.UP)
-		transform = transform.interpolate_with(target_transform, 4.0 * get_physics_process_delta_time())
-
-func _on_navigation_finished():
-	"""Called when navigation can't find a path to target"""
-	print("Navigation finished - no path to target")
-	
-	# Try to get a new path after a short delay
-	await get_tree().create_timer(0.5).timeout
-	if target and navigation_ready:
-		update_navigation_target()
-
-func _on_target_reached():
-	"""Called when we reach the navigation target"""
-	print("Target reached!")
-	
-	# Wait a moment then try to get closer or update target
-	await get_tree().create_timer(0.3).timeout
-	if target and navigation_ready:
-		update_navigation_target()
+	# Face movement direction (only when moving)
+	if direction.length() > 0.1 and not is_being_observed:
+		var look_target = global_position + direction
+		look_at(look_target, Vector3.UP)
 
 func handle_freeze():
-	if anim_player:
+	if anim_player and anim_player.is_playing():
 		anim_player.pause()
 	if audio_player:
 		audio_player.stream_paused = true
@@ -323,7 +224,7 @@ func handle_freeze():
 	move_and_slide()
 
 func handle_unfreeze():
-	if anim_player:
+	if anim_player and not anim_player.is_playing() and not is_being_observed:
 		anim_player.play()
 	if audio_player:
 		audio_player.stream_paused = false
@@ -336,26 +237,3 @@ func handle_footsteps():
 			audio_player.pitch_scale = randf_range(0.8, 1.2)
 			audio_player.play()
 		footstep_timer.start(0.85)
-
-# Debug function
-func _input(event):
-	if event.is_action_pressed("ui_accept"):
-		print("=== ENEMY DEBUG ===")
-		print("Position: ", global_position)
-		print("Target: ", target.global_position if target else "None")
-		print("Velocity: ", velocity)
-		print("Navigation ready: ", navigation_ready)
-		print("Position history size: ", position_history.size())
-		
-		if navigation_agent:
-			print("Nav target: ", navigation_agent.target_position)
-			print("Nav finished: ", navigation_agent.is_navigation_finished())
-			print("Nav map valid: ", navigation_agent.get_navigation_map().is_valid())
-			print("Distance to player: ", global_position.distance_to(target.global_position) if target else "N/A")
-			
-			if navigation_agent.get_navigation_map().is_valid():
-				var nav_map = navigation_agent.get_navigation_map()
-				var closest = NavigationServer3D.map_get_closest_point(nav_map, global_position)
-				print("Closest nav point: ", closest)
-				print("Distance to nav mesh: ", global_position.distance_to(closest))
-		print("===================")

@@ -147,6 +147,14 @@ func spawn_secret_room_enemies():
 
 # Optimized debug controls
 func _input(event):
+	if event.is_action_pressed("ui_page_up"):
+		debug_level()
+	elif event.is_action_pressed("ui_page_down"):
+		respawn_all_enemies()
+	elif event.is_action_pressed("ui_home"):
+		teleport_player_to_spawn()
+	elif event.is_action_pressed("ui_end"):  # Add this
+		test_navigation_manually()
 	if not event.is_pressed():
 		return
 	
@@ -289,3 +297,12 @@ func get_suitable_enemy_positions(count: int) -> Array[Vector3]:
 	
 	print("Selected ", positions.size(), " suitable enemy positions out of ", suitable_positions.size(), " candidates")
 	return positions
+
+
+func test_navigation_manually():
+	print("=== MANUAL NAVIGATION TEST ===")
+	if maze_generator:
+		await maze_generator.debug_navigation_generation()
+		print("Attempting to rebuild navigation...")
+		await maze_generator.create_simple_navigation_mesh()
+	print("==============================")

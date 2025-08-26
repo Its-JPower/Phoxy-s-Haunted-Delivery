@@ -39,7 +39,15 @@ func generate_maze():
 	create_exits()
 	add_secret_rooms()
 	build_3d_maze()
-	build_navigation_mesh()
+	
+	# Debug: Print maze state before navigation
+	print("Maze generated. Grid size: ", maze_grid.size())
+	print("Sample cells: ", maze_grid[1][1], ", ", maze_grid[3][3])
+	
+	# Build navigation with proper timing
+	await build_navigation_mesh_simple()
+	
+	print("Maze generation complete!")
 
 func initialize_grid():
 	maze_grid = []
@@ -454,24 +462,6 @@ func create_navigation_mesh():
 	_navigation_region.enabled = true
 	print("Navigation mesh created with ", vertices.size(), " vertices and ", polygons.size(), " polygons")
 
-func create_enhanced_navigation_quad(grid_pos: Vector2i, vertices: PackedVector3Array, polygons: Array):
-	"""Create navigation quad with better corridor coverage"""
-	var world_pos = Vector3(grid_pos.x * cell_size, 0.05, grid_pos.y * cell_size)  # Slightly above floor
-	var quad_size = cell_size * 0.85  # Good coverage while avoiding walls
-	var half_size = quad_size * 0.5
-	
-	var start_idx = vertices.size()
-	vertices.append_array([
-		world_pos + Vector3(-half_size, 0, -half_size),
-		world_pos + Vector3(half_size, 0, -half_size),
-		world_pos + Vector3(half_size, 0, half_size),
-		world_pos + Vector3(-half_size, 0, half_size)
-	])
-	
-	# Create triangles for the quad
-	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
-	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
-
 # Also add this helper function to better configure navigation agents:
 func setup_navigation_agent_for_maze(agent: NavigationAgent3D):
 	"""Optimized navigation agent setup specifically for maze navigation"""
@@ -487,65 +477,6 @@ func setup_navigation_agent_for_maze(agent: NavigationAgent3D):
 	agent.max_speed = 4.0
 
 # Replace the entire navigation system in your MazeGenerator3D.gd with this:
-
-func build_navigation_mesh():
-	print("Building navigation mesh...")
-	
-	# Wait for scene to be fully ready
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	# Remove any existing navigation region
-	if _navigation_region:
-		_navigation_region.queue_free()
-		_navigation_region = null
-	
-	# Create new navigation region
-	_navigation_region = NavigationRegion3D.new()
-	_navigation_region.name = "NavigationRegion3D"
-	add_child(_navigation_region)
-	
-	# Create navigation mesh
-	var nav_mesh = NavigationMesh.new()
-	_navigation_region.navigation_mesh = nav_mesh
-	
-	# Configure navigation mesh properties
-	nav_mesh.agent_radius = 0.4
-	nav_mesh.agent_height = 2.0
-	nav_mesh.agent_max_climb = 0.5
-	nav_mesh.agent_max_slope = 45.0
-	nav_mesh.cell_size = 0.25
-	nav_mesh.cell_height = 0.1
-	nav_mesh.region_min_size = 1.0
-	nav_mesh.region_merge_size = 5.0
-	nav_mesh.edge_max_length = 4.0
-	nav_mesh.edge_max_error = 1.0
-	nav_mesh.vertices_per_polygon = 6
-	nav_mesh.detail_sample_distance = 2.0
-	nav_mesh.detail_sample_max_error = 1.0
-	
-	print("Navigation mesh properties configured")
-	
-	# Generate the actual mesh geometry
-	create_walkable_navigation_mesh(nav_mesh)
-	
-	# Enable the navigation region
-	_navigation_region.enabled = true
-	
-	# Wait for navigation server to process
-	await get_tree().process_frame
-	await get_tree().physics_frame
-	
-	print("Navigation mesh generation complete!")
-	print("Navigation region enabled: ", _navigation_region.enabled)
-	print("Navigation mesh valid: ", nav_mesh != null)
-	
-	# Verify the mesh was created
-	if nav_mesh.get_vertices().size() > 0:
-		print("SUCCESS: Navigation mesh has ", nav_mesh.get_vertices().size(), " vertices")
-		print("Polygons: ", nav_mesh.get_polygon_count())
-	else:
-		print("ERROR: Navigation mesh has no vertices!")
 
 func create_walkable_navigation_mesh(nav_mesh: NavigationMesh):
 	print("Creating walkable navigation mesh...")
@@ -751,3 +682,419 @@ func debug_navigation_mesh():
 	else:
 		print("ERROR: No navigation region!")
 	print("========================")
+
+# Add this to your MazeGenerator3D class to fix navigation mesh generation
+
+func create_enhanced_navigation_quad(grid_pos: Vector2i, vertices: PackedVector3Array, polygons: Array):
+	"""Create larger, overlapping navigation quads for better corridor coverage"""
+	var world_pos = Vector3(grid_pos.x * cell_size, 0.05, grid_pos.y * cell_size)
+	
+	# Use larger quads that overlap slightly to ensure connectivity
+	var quad_size = cell_size * 0.95  # Much larger coverage
+	var half_size = quad_size * 0.5
+	
+	var start_idx = vertices.size()
+	vertices.append_array([
+		world_pos + Vector3(-half_size, 0, -half_size),
+		world_pos + Vector3(half_size, 0, -half_size),
+		world_pos + Vector3(half_size, 0, half_size),
+		world_pos + Vector3(-half_size, 0, half_size)
+	])
+	
+	# Create triangles for the quad
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+func create_corridor_navigation_mesh(nav_mesh: NavigationMesh):
+	"""Create connected navigation areas for maze corridors"""
+	print("Creating corridor-based navigation mesh...")
+	
+	var vertices = PackedVector3Array()
+	var polygons = []
+	
+	# Get all walkable cells
+	var walkable_cells = get_all_walkable_cells()
+	print("Processing ", walkable_cells.size(), " walkable cells")
+	
+	# Group connected cells into corridors
+	var corridor_groups = group_cells_into_corridors(walkable_cells)
+	print("Found ", corridor_groups.size(), " corridor groups")
+	
+	# Create navigation mesh for each corridor group
+	for group in corridor_groups:
+		create_corridor_mesh(group, vertices, polygons)
+	
+	# Set the mesh data
+	nav_mesh.set_vertices(vertices)
+	for polygon in polygons:
+		nav_mesh.add_polygon(polygon)
+	
+	print("Corridor navigation mesh created with ", vertices.size(), " vertices and ", polygons.size(), " polygons")
+
+func group_cells_into_corridors(walkable_cells: Array[Vector2i]) -> Array:
+	"""Group connected walkable cells into corridor segments"""
+	var groups = []
+	var processed = {}
+	
+	for cell in walkable_cells:
+		if not processed.has(cell):
+			var group = get_connected_cells(cell, walkable_cells, processed)
+			if group.size() > 0:
+				groups.append(group)
+	
+	return groups
+
+func get_connected_cells(start_cell: Vector2i, all_cells: Array[Vector2i], processed: Dictionary) -> Array[Vector2i]:
+	"""Get all cells connected to start_cell"""
+	var group: Array[Vector2i] = []
+	var queue: Array[Vector2i] = [start_cell]
+	
+	while not queue.is_empty():
+		var current = queue.pop_front()
+		
+		if processed.has(current):
+			continue
+		
+		processed[current] = true
+		group.append(current)
+		
+		# Check adjacent cells
+		for direction in DIRECTIONS:
+			var adjacent = current + direction
+			if adjacent in all_cells and not processed.has(adjacent):
+				queue.append(adjacent)
+	
+	return group
+
+func create_corridor_mesh(corridor_cells: Array[Vector2i], vertices: PackedVector3Array, polygons: Array):
+	"""Create a single mesh for an entire corridor"""
+	if corridor_cells.is_empty():
+		return
+	
+	# Find the bounding box of the corridor
+	var min_x = corridor_cells[0].x
+	var max_x = corridor_cells[0].x
+	var min_y = corridor_cells[0].y
+	var max_y = corridor_cells[0].y
+	
+	for cell in corridor_cells:
+		min_x = min(min_x, cell.x)
+		max_x = max(max_x, cell.x)
+		min_y = min(min_y, cell.y)
+		max_y = max(max_y, cell.y)
+	
+	# Create a large navigation area covering the entire corridor
+	var world_min = Vector3(min_x * cell_size - cell_size * 0.4, 0.05, min_y * cell_size - cell_size * 0.4)
+	var world_max = Vector3(max_x * cell_size + cell_size * 0.4, 0.05, max_y * cell_size + cell_size * 0.4)
+	
+	var start_idx = vertices.size()
+	
+	# Create a large quad covering the entire corridor
+	vertices.append_array([
+		Vector3(world_min.x, 0.05, world_min.z),  # Bottom-left
+		Vector3(world_max.x, 0.05, world_min.z),  # Bottom-right
+		Vector3(world_max.x, 0.05, world_max.z),  # Top-right
+		Vector3(world_min.x, 0.05, world_max.z)   # Top-left
+	])
+	
+	# Create triangles
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 1, start_idx + 2]))
+	polygons.append(PackedInt32Array([start_idx + 0, start_idx + 2, start_idx + 3]))
+
+# Replace your build_navigation_mesh function with this improved version:
+func build_navigation_mesh():
+	print("Building improved navigation mesh...")
+	
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Remove existing navigation region
+	if _navigation_region:
+		_navigation_region.queue_free()
+		_navigation_region = null
+	
+	# Create new navigation region
+	_navigation_region = NavigationRegion3D.new()
+	_navigation_region.name = "NavigationRegion3D"
+	add_child(_navigation_region)
+	
+	# Create and configure navigation mesh
+	var nav_mesh = NavigationMesh.new()
+	_navigation_region.navigation_mesh = nav_mesh
+	
+	# Optimized settings for maze navigation
+	nav_mesh.agent_radius = 0.3
+	nav_mesh.agent_height = 2.0
+	nav_mesh.agent_max_climb = 0.3
+	nav_mesh.agent_max_slope = 45.0
+	nav_mesh.cell_size = 0.2  # Smaller cells for better precision
+	nav_mesh.cell_height = 0.05
+	nav_mesh.region_min_size = 1.0  # Allow smaller regions
+	nav_mesh.region_merge_size = 5.0
+	nav_mesh.edge_max_length = 2.0  # Shorter edges
+	nav_mesh.edge_max_error = 0.3
+	nav_mesh.vertices_per_polygon = 6
+	nav_mesh.detail_sample_distance = 1.0
+	nav_mesh.detail_sample_max_error = 0.3
+	
+	print("Navigation mesh properties configured")
+	
+	# Use the improved corridor-based navigation mesh generation
+	create_corridor_navigation_mesh(nav_mesh)
+	
+	# Enable the navigation region
+	_navigation_region.enabled = true
+	
+	# Wait for navigation server to process
+	await get_tree().process_frame
+	await get_tree().physics_frame
+	
+	print("Improved navigation mesh generation complete!")
+	
+	# Verify the mesh was created
+	if nav_mesh.get_vertices().size() > 0:
+		print("SUCCESS: Navigation mesh has ", nav_mesh.get_vertices().size(), " vertices")
+		print("Polygons: ", nav_mesh.get_polygon_count())
+		debug_navigation_coverage()
+	else:
+		print("ERROR: Navigation mesh has no vertices!")
+
+func debug_navigation_coverage():
+	"""Debug function to check navigation coverage"""
+	if not _navigation_region or not _navigation_region.navigation_mesh:
+		return
+		
+	var nav_map = _navigation_region.get_navigation_map()
+	if not nav_map.is_valid():
+		print("Navigation map not valid for coverage test")
+		return
+	
+	# Test a few key positions
+	var test_positions = [
+		grid_to_world(Vector2i(1, 1)),  # Start position
+		grid_to_world(Vector2i(3, 3)),  # Interior position
+		grid_to_world(Vector2i(maze_size * 2 - 1, maze_size * 2 - 1))  # End position
+	]
+	
+	print("Testing navigation coverage:")
+	for i in range(test_positions.size()):
+		var pos = test_positions[i]
+		var closest = NavigationServer3D.map_get_closest_point(nav_map, pos)
+		var distance = pos.distance_to(closest)
+		print("Test ", i + 1, ": ", pos, " -> ", closest, " (distance: ", distance, ")")
+
+# Add this to your MazeGenerator3D class to debug navigation mesh generation
+
+func debug_navigation_generation():
+	"""Call this function to see what's happening with navigation mesh generation"""
+	print("=== NAVIGATION MESH DEBUG ===")
+	
+	# Check if we have a navigation region
+	if not _navigation_region:
+		print("ERROR: No _navigation_region exists!")
+		return
+	else:
+		print("Navigation region exists: ", _navigation_region.name)
+		print("Navigation region enabled: ", _navigation_region.enabled)
+	
+	# Check navigation mesh
+	var nav_mesh = _navigation_region.navigation_mesh
+	if not nav_mesh:
+		print("ERROR: No navigation mesh assigned to region!")
+		return
+	else:
+		print("Navigation mesh exists")
+		print("Vertices: ", nav_mesh.get_vertices().size())
+		print("Polygons: ", nav_mesh.get_polygon_count())
+	
+	# Check walkable cells
+	var walkable_cells = get_all_walkable_cells()
+	print("Walkable cells found: ", walkable_cells.size())
+	if walkable_cells.size() > 0:
+		print("First few walkable cells: ", walkable_cells.slice(0, min(5, walkable_cells.size())))
+	
+	# Check navigation map
+	var nav_map = _navigation_region.get_navigation_map()
+	print("Navigation map valid: ", nav_map.is_valid())
+	
+	if nav_map.is_valid():
+		# Test a specific position
+		var test_pos = grid_to_world(Vector2i(1, 1)) + Vector3(0, 1, 0)
+		var closest_point = NavigationServer3D.map_get_closest_point(nav_map, test_pos)
+		print("Test position: ", test_pos)
+		print("Closest nav point: ", closest_point)
+		print("Distance: ", test_pos.distance_to(closest_point))
+	
+	print("=============================")
+
+# Simple navigation mesh generation that should definitely work
+func create_simple_navigation_mesh():
+	"""Create a basic navigation mesh that definitely works"""
+	print("Creating simple navigation mesh...")
+	
+	# Remove existing navigation region
+	if _navigation_region:
+		_navigation_region.queue_free()
+		await get_tree().process_frame
+	
+	# Create new navigation region
+	_navigation_region = NavigationRegion3D.new()
+	_navigation_region.name = "NavigationRegion3D"
+	add_child(_navigation_region)
+	
+	# Create navigation mesh
+	var nav_mesh = NavigationMesh.new()
+	_navigation_region.navigation_mesh = nav_mesh
+	
+	# Simple, guaranteed-to-work settings
+	nav_mesh.agent_radius = 0.5
+	nav_mesh.agent_height = 2.0
+	nav_mesh.cell_size = 0.5
+	nav_mesh.cell_height = 0.2
+	
+	# Get walkable cells
+	var walkable_cells = get_all_walkable_cells()
+	print("Found ", walkable_cells.size(), " walkable cells")
+	
+	if walkable_cells.is_empty():
+		print("ERROR: No walkable cells found!")
+		return
+	
+	# Create vertices and polygons manually
+	var vertices = PackedVector3Array()
+	var polygons = []
+	
+	for cell in walkable_cells:
+		var world_pos = grid_to_world(cell)
+		world_pos.y = 0.1  # Slightly above floor
+		
+		var size = cell_size * 0.8  # Large enough to be useful
+		var half = size * 0.5
+		
+		var start_idx = vertices.size()
+		
+		# Add 4 vertices for this cell
+		vertices.append(world_pos + Vector3(-half, 0, -half))
+		vertices.append(world_pos + Vector3(half, 0, -half))
+		vertices.append(world_pos + Vector3(half, 0, half))
+		vertices.append(world_pos + Vector3(-half, 0, half))
+		
+		# Add 2 triangles
+		polygons.append(PackedInt32Array([start_idx, start_idx + 1, start_idx + 2]))
+		polygons.append(PackedInt32Array([start_idx, start_idx + 2, start_idx + 3]))
+	
+	# Set mesh data
+	nav_mesh.set_vertices(vertices)
+	for polygon in polygons:
+		nav_mesh.add_polygon(polygon)
+	
+	print("Simple navigation mesh created:")
+	print("- Vertices: ", vertices.size())
+	print("- Polygons: ", polygons.size())
+	
+	# Enable region
+	_navigation_region.enabled = true
+	
+	# Wait for processing
+	await get_tree().process_frame
+	await get_tree().physics_frame
+	
+	# Verify it worked
+	if nav_mesh.get_vertices().size() > 0:
+		print("SUCCESS: Simple navigation mesh working!")
+		debug_navigation_generation()
+	else:
+		print("FAILED: Simple navigation mesh has no vertices")
+
+# Add this to your _ready() function or call it manually for testing
+func test_navigation_generation():
+	"""Test function to verify navigation generation works"""
+	print("Testing navigation generation...")
+	
+	# Wait for maze to be fully generated
+	await get_tree().create_timer(1.0).timeout
+	
+	# Try the simple navigation mesh
+	await create_simple_navigation_mesh()
+	
+	# Debug the results
+	debug_navigation_generation()
+
+# Replace your existing build_navigation_mesh function with this simpler version:
+func build_navigation_mesh_simple():
+	print("Building simple navigation mesh...")
+	
+	# Wait for scene setup
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	# Clear existing
+	if _navigation_region:
+		_navigation_region.queue_free()
+		_navigation_region = null
+	
+	await get_tree().process_frame
+	
+	# Create navigation region
+	_navigation_region = NavigationRegion3D.new()
+	_navigation_region.name = "NavigationRegion3D"
+	add_child(_navigation_region)
+	
+	# Create and configure navigation mesh
+	var nav_mesh = NavigationMesh.new()
+	nav_mesh.agent_radius = 0.4
+	nav_mesh.agent_height = 2.0
+	nav_mesh.agent_max_climb = 0.5
+	nav_mesh.cell_size = 0.3
+	nav_mesh.cell_height = 0.1
+	
+	# Get all walkable positions
+	var walkable_cells = get_all_walkable_cells()
+	print("Processing ", walkable_cells.size(), " walkable cells for navigation")
+	
+	if walkable_cells.is_empty():
+		print("ERROR: No walkable cells found!")
+		return
+	
+	# Create simple navigation quads
+	var vertices = PackedVector3Array()
+	var polygons = []
+	
+	for cell_pos in walkable_cells:
+		var world_pos = grid_to_world(cell_pos) + Vector3(0, 0.1, 0)
+		var quad_size = cell_size * 0.8
+		var half = quad_size * 0.5
+		
+		var vertex_start = vertices.size()
+		
+		vertices.append_array([
+			world_pos + Vector3(-half, 0, -half),
+			world_pos + Vector3(half, 0, -half),
+			world_pos + Vector3(half, 0, half),
+			world_pos + Vector3(-half, 0, half)
+		])
+		
+		polygons.append(PackedInt32Array([vertex_start, vertex_start + 1, vertex_start + 2]))
+		polygons.append(PackedInt32Array([vertex_start, vertex_start + 2, vertex_start + 3]))
+	
+	# Apply to navigation mesh
+	nav_mesh.set_vertices(vertices)
+	for polygon in polygons:
+		nav_mesh.add_polygon(polygon)
+	
+	_navigation_region.navigation_mesh = nav_mesh
+	_navigation_region.enabled = true
+	
+	# Wait for navigation server
+	await get_tree().process_frame
+	await get_tree().physics_frame
+	
+	print("Navigation mesh created with ", vertices.size(), " vertices, ", polygons.size(), " polygons")
+	
+	# Verify
+	if nav_mesh.get_vertices().size() > 0:
+		print("Navigation mesh generation successful!")
+		var nav_map = _navigation_region.get_navigation_map()
+		print("Navigation map valid: ", nav_map.is_valid())
+	else:
+		print("ERROR: Navigation mesh generation failed!")
