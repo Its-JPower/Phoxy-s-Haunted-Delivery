@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cygbue7swmavf"]
+[gd_scene load_steps=15 format=3 uid="uid://cygbue7swmavf"]
 
 [ext_resource type="Script" uid="uid://cvroovw7rk2te" path="res://Scripts/main_menu.gd" id="1_6nwb2"]
 [ext_resource type="Texture2D" uid="uid://d2t152ccp3rdp" path="res://Assets/images/best at handball.jpg" id="3_pl6eg"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bl7tlvrwidnmb" path="res://Scenes/menuui.tscn" id="5_8u8gh"]
 [ext_resource type="PackedScene" uid="uid://bhgrvq3l6vm33" path="res://Assets/Enemies/HEAD golden.glb" id="5_prkst"]
 [ext_resource type="PackedScene" uid="uid://bkqmpls5vdtee" path="res://Scenes/markapie.tscn" id="7_7qohy"]
+[ext_resource type="PackedScene" uid="uid://b8wfswxma8e2r" path="res://Scenes/game thory.tscn" id="8_7qohy"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ce3w2"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
@@ -54,7 +55,7 @@ render_target_update_mode = 4
 [node name="Node3D" type="Node3D" parent="Background/SubViewportContainer/SubViewport"]
 
 [node name="Camera3D" type="Camera3D" parent="Background/SubViewportContainer/SubViewport/Node3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 15)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 0, 15.2)
 
 [node name="Timer" type="Timer" parent="Background/SubViewportContainer/SubViewport/Node3D/Camera3D"]
 wait_time = 5.0
@@ -95,8 +96,11 @@ parameters/looping = true
 [node name="HEAD golden" parent="." instance=ExtResource("5_prkst")]
 transform = Transform3D(0.173205, 0, -0.1, 0, 0.2, 0, 0.1, 0, 0.173205, -0.2, -0.6, 12.2)
 
-[node name="Node3D" parent="." instance=ExtResource("7_7qohy")]
-transform = Transform3D(-6.55671e-09, 0, 0.15, 0, 0.15, 0, -0.15, 0, -6.55671e-09, -3.7519, 0, 14.5379)
+[node name="Markapie" parent="." instance=ExtResource("7_7qohy")]
+transform = Transform3D(-4.37114e-09, 0, 0.1, 0, 0.1, 0, -0.1, 0, -4.37114e-09, -3.7519, 0.2, 14.5379)
+
+[node name="Game thory" parent="." instance=ExtResource("8_7qohy")]
+transform = Transform3D(-2.18557e-08, 0, -0.5, 0, 0.5, 0, 0.5, 0, -2.18557e-08, 0.1, 0.3, 14.4)
 
 [connection signal="mouse_entered" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_entered"]
 [connection signal="mouse_exited" from="Menu/MarginContainer/VBoxContainer/btn_play" to="." method="_on_btn_play_mouse_exited"]
