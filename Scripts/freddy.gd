@@ -5,15 +5,22 @@ extends CharacterBody3D
 @onready var anim_player: AnimationPlayer = $Freddy/AnimationPlayer
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 
-@export var speed = 6.0  # Faster when not observed
+@export var speed = 8.0  # Faster when not observed
 @export var gravity = -20.0
 @export var vision_check_distance = 50.0  # How far to check for player vision
 @export var freeze_when_observed = true
+@export var mass = 10.0  # Make enemy heavier so player can't push easily
+@export var min_freeze_distance = 0.5  # Always freeze when this close to player
 
 var target: CharacterBody3D
 var navigation_ready = false
 var is_being_observed = false
 var player_camera: Camera3D
+
+# Animation state tracking
+var was_animation_playing = false
+var current_animation_position = 0.0
+var paused_animation_name = ""
 
 # Visual feedback
 var statue_material: Material
@@ -22,6 +29,14 @@ var normal_material: Material
 func _ready():
 	add_to_group("Enemies")
 	print("Weeping Angel spawned at position: ", global_position)
+	
+	# Set up physics properties to prevent pushing
+	set_collision_layer(2)  # Enemy layer
+	set_collision_mask(1)   # Collide with walls/environment only, not player
+	
+	# Make the enemy much heavier and more stable
+	if has_method("set_mass"):
+		call("set_mass", mass)
 	
 	if navigation_agent:
 		navigation_agent.radius = 0.4
@@ -61,7 +76,12 @@ func _physics_process(delta):
 		return
 	
 	# Check if being observed by player
+	var was_observed = is_being_observed
 	check_if_observed()
+	
+	# Handle animation state changes when observation status changes
+	if was_observed != is_being_observed:
+		handle_observation_change(was_observed)
 	
 	# Apply gravity
 	if not is_on_floor():
@@ -74,18 +94,72 @@ func _physics_process(delta):
 		update_target()
 		navigate_to_target()
 	else:
-		# Freeze in place when observed
+		# Freeze in place when observed - resist all movement
 		velocity.x = 0
 		velocity.z = 0
-		# Play statue pose animation
-		if anim_player and anim_player.current_animation != "statue_pose":
-			anim_player.play("statue_pose")  # You'll need to create this animation
+		# Add resistance to external forces when frozen
+		if has_method("set_lock_rotation_enabled"):
+			call("set_lock_rotation_enabled", true)
 	
 	move_and_slide()
+	
+	# Resist being pushed by adding counter-force when frozen
+	if is_being_observed and get_slide_collision_count() > 0:
+		resist_pushing()
 	
 	# Only play footsteps when moving and not observed
 	if not is_being_observed:
 		handle_footsteps()
+
+func handle_observation_change(was_observed: bool):
+	"""Handle the transition between observed and not observed states"""
+	if is_being_observed and not was_observed:
+		# Just became observed - freeze animations
+		freeze_animations()
+	elif not is_being_observed and was_observed:
+		# Just became unobserved - resume animations
+		resume_animations()
+
+func freeze_animations():
+	"""Freeze all animations when being observed"""
+	if anim_player and anim_player.is_playing():
+		# Store current animation state
+		was_animation_playing = true
+		paused_animation_name = anim_player.current_animation
+		current_animation_position = anim_player.current_animation_position
+		
+		# Pause the animation
+		anim_player.pause()
+		print("Animation paused: ", paused_animation_name, " at position: ", current_animation_position)
+	
+	# Stop footstep timer
+	if footstep_timer and not footstep_timer.is_stopped():
+		footstep_timer.paused = true
+	
+	# Pause audio if playing
+	if audio_player and audio_player.playing:
+		audio_player.stream_paused = true
+
+func resume_animations():
+	"""Resume animations when no longer being observed"""
+	if anim_player and was_animation_playing:
+		# Resume the paused animation from where it left off
+		if paused_animation_name != "":
+			anim_player.play(paused_animation_name)
+			anim_player.seek(current_animation_position, true)
+			print("Animation resumed: ", paused_animation_name, " from position: ", current_animation_position)
+		
+		was_animation_playing = false
+		paused_animation_name = ""
+		current_animation_position = 0.0
+	
+	# Resume footstep timer
+	if footstep_timer:
+		footstep_timer.paused = false
+	
+	# Resume audio
+	if audio_player:
+		audio_player.stream_paused = false
 
 func check_if_observed():
 	if not player_camera or not target:
@@ -101,11 +175,19 @@ func check_if_observed():
 		update_visual_state(was_observed)
 		return
 	
+	# Always freeze when very close to player (they can definitely see you)
+	if distance_to_player <= min_freeze_distance:
+		is_being_observed = true
+		print("Weeping Angel frozen - too close to player! Distance: ", distance_to_player)
+		update_visual_state(was_observed)
+		return
+	
 	# Check if enemy is in camera's view frustum
 	if is_in_camera_view():
 		# Check if there's line of sight (no walls blocking)
 		if has_line_of_sight_to_player():
 			is_being_observed = true
+			print("Weeping Angel frozen - in camera view with line of sight! Distance: ", distance_to_player)
 	
 	update_visual_state(was_observed)
 
@@ -121,13 +203,17 @@ func is_in_camera_view() -> bool:
 	# Vector from camera to enemy
 	var to_enemy = (global_position - camera_pos).normalized()
 	
-	# Check if enemy is in front of camera
+	# Check if enemy is in front of camera (more generous field of view)
 	var dot_product = camera_forward.dot(to_enemy)
-	if dot_product < 0.3:  # Roughly 70-degree field of view
+	if dot_product < 0.1:  # Very wide field of view - almost 180 degrees
 		return false
 	
-	# Use camera's built-in frustum check for more accuracy
-	var enemy_aabb = AABB(global_position - Vector3.ONE, Vector3.ONE * 2)
+	# Additional check: if enemy is very close, they're definitely visible
+	var distance = camera_pos.distance_to(global_position)
+	if distance < min_freeze_distance * 2:
+		return true
+	
+	# Use camera's built-in frustum check for accuracy
 	return player_camera.is_position_in_frustum(global_position)
 
 func has_line_of_sight_to_player() -> bool:
@@ -139,11 +225,29 @@ func has_line_of_sight_to_player() -> bool:
 	var to = target.global_position + Vector3(0, 1.0, 0)  # Player eye level
 	
 	var query = PhysicsRayQueryParameters3D.create(from, to)
-	query.collision_mask = 1  # Wall collision layer
-	query.exclude = [self, target]
+	query.collision_mask = 1  # Wall collision layer only
+	query.exclude = [self, target]  # Exclude both enemy and player from ray
 	
 	var result = space_state.intersect_ray(query)
-	return result.is_empty()  # True if no walls blocking
+	var has_clear_sight = result.is_empty()
+	
+	if not has_clear_sight and result.has("collider"):
+		print("Line of sight blocked by: ", result.collider.name)
+	
+	return has_clear_sight  # True if no walls blocking
+
+func resist_pushing():
+	"""Resist being pushed when frozen by applying counter-forces"""
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		
+		# If colliding with player, resist the push
+		if collider and collider.is_in_group("Player"):
+			var push_force = collision.get_normal() * -500  # Strong resistance
+			# Apply counter-force to maintain position
+			velocity += push_force * get_physics_process_delta_time()
+			print("Resisting player push!")
 
 func update_visual_state(was_observed: bool):
 	# Change appearance when observed/not observed
@@ -162,10 +266,6 @@ func apply_statue_appearance():
 	var mesh_instance = $Freddy/MeshInstance3D  # Adjust path
 	if mesh_instance and statue_material:
 		mesh_instance.set_surface_override_material(0, statue_material)
-	
-	# Stop movement animations
-	if anim_player:
-		anim_player.play("statue_pose")
 
 func apply_normal_appearance():
 	# Restore normal material
@@ -173,9 +273,9 @@ func apply_normal_appearance():
 	if mesh_instance:
 		mesh_instance.set_surface_override_material(0, normal_material)
 	
-	# Resume normal animations
-	if anim_player:
-		anim_player.play("walk")  # Or whatever your normal animation is
+	# Start appropriate movement animation if not already playing
+	if anim_player and velocity.length() > 0.5 and not anim_player.is_playing():
+		anim_player.play("walk")  # Or whatever your movement animation is
 
 func update_target():
 	if not navigation_agent or not target:
@@ -208,8 +308,13 @@ func navigate_to_target():
 	if direction.length() > 0.1 and not is_being_observed:
 		var look_target = global_position + direction
 		look_at(look_target, Vector3.UP)
+		
+		# Play walking animation if not already playing and not observed
+		if anim_player and anim_player.current_animation != "walk" and not is_being_observed:
+			anim_player.play("walk")
 
 func handle_freeze():
+	# Global freeze handling (different from observation freeze)
 	if anim_player and anim_player.is_playing():
 		anim_player.pause()
 	if audio_player:
@@ -224,6 +329,7 @@ func handle_freeze():
 	move_and_slide()
 
 func handle_unfreeze():
+	# Global unfreeze handling
 	if anim_player and not anim_player.is_playing() and not is_being_observed:
 		anim_player.play()
 	if audio_player:
