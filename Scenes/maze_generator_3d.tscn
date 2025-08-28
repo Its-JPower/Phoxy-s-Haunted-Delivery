@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://kqrma0gnq8wn"]
+
+[ext_resource type="Script" uid="uid://cpferq8d1hs6h" path="res://MazeGenerator3D.gd" id="1_6p6wu"]
+
+[node name="MazeGenerator3D" type="Node3D"]
+script = ExtResource("1_6p6wu")
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]

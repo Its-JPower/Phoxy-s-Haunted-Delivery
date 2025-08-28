@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2g1ag8kxkdwq"
-path.s3tc="res://.godot/imported/Maze2_BLACK BUG BITE.jpg-f902fe28f9af5d1a0c2c2fc608b21ce3.s3tc.ctex"
+uid="uid://btg7l1ev1rfpo"
+path.s3tc="res://.godot/imported/wall_texture.jpg-e9fdd61325ec62f11ed0b8909070b33c.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://Assets/maze/Maze2_BLACK BUG BITE.jpg"
-dest_files=["res://.godot/imported/Maze2_BLACK BUG BITE.jpg-f902fe28f9af5d1a0c2c2fc608b21ce3.s3tc.ctex"]
+source_file="res://Assets/textures/wall_texture.jpg"
+dest_files=["res://.godot/imported/wall_texture.jpg-e9fdd61325ec62f11ed0b8909070b33c.s3tc.ctex"]
 
 [params]
 
