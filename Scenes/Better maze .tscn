@@ -1,10 +1,9 @@
-[gd_scene load_steps=267 format=4 uid="uid://y5cf5no740ow"]
+[gd_scene load_steps=266 format=4 uid="uid://y5cf5no740ow"]
 
 [ext_resource type="Texture2D" uid="uid://c446xrppphjpm" path="res://Assets/maze/Maze new cool floor_fnaf flor.jpg" id="1_02pke"]
 [ext_resource type="Texture2D" uid="uid://fdol51f128os" path="res://Assets/maze/Maze new cool floor_BACKGROUND.jpg" id="2_pbjtk"]
 [ext_resource type="Texture2D" uid="uid://bxddmxupvl0qg" path="res://Assets/maze/Maze new cool floor_bakedMaze_specularGlossiness_4.png" id="3_2xji1"]
 [ext_resource type="Texture2D" uid="uid://rlexq0gc88we" path="res://Assets/maze/Maze new cool floor_bakedMaze_normal.png" id="4_7anix"]
-[ext_resource type="PackedScene" uid="uid://dnsxenqk0abab" path="res://Scenes/Speakers.tscn" id="5_pbjtk"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gt8d3"]
 resource_name = "Material.001"
@@ -3928,8 +3927,3 @@ skeleton = NodePath("")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Maze new cool floor/MazePiece_085/StaticBody3D"]
 shape = SubResource("ConcavePolygonShape3D_ltgt1")
-
-[node name="Circle" type="Node3D" parent="Maze new cool floor"]
-
-[node name="Speakers" parent="." instance=ExtResource("5_pbjtk")]
-transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 17, 0.5, 87)

@@ -2,15 +2,13 @@
 
 [ext_resource type="Script" uid="uid://yhfno35a4pmc" path="res://Scripts/freddy.gd" id="1_mn02b"]
 [ext_resource type="PackedScene" uid="uid://ccqc7mn4644ta" path="res://Assets/Anmtion/Freddy/freddy run.glb" id="2_x4qok"]
+[ext_resource type="Texture2D" uid="uid://d2pibnu5bfqik" path="res://Assets/Enemies/Freddy_Freddy Fazbear Texture.png" id="3_hps1a"]
 [ext_resource type="AudioStream" uid="uid://cy6qft0gi2ula" path="res://Assets/Audio/animatronic_walk.mp3" id="4_hps1a"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sm87w"]
+albedo_texture = ExtResource("3_hps1a")
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_w06hg"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_mn02b"]
-size = Vector3(28.7508, 8.34076, 1)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_hps1a"]
-size = Vector3(1, 2.86914, 1.23456)
 
 [node name="WA_FNAF" type="CharacterBody3D" groups=["Enemies"]]
 collision_layer = 8
@@ -100,6 +98,9 @@ bones/39/position = Vector3(2.15113e-05, 252.483, 1.39077e-05)
 bones/39/rotation = Quaternion(0.381645, 0.0522805, -0.0119141, 0.922752)
 bones/40/position = Vector3(-8.76188e-06, 103.292, -2.12193e-05)
 
+[node name="Freddy Fazbear" parent="Freddy/Armature/Skeleton3D" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_sm87w")
+
 [node name="AnimationPlayer" parent="Freddy" index="1"]
 autoplay = "Armature|mixamo_com|Layer0"
 
@@ -109,18 +110,6 @@ shape = SubResource("CapsuleShape3D_w06hg")
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 
-[node name="Area3D" type="Area3D" parent="."]
-visible = false
-collision_layer = 2
-collision_mask = 2
-monitoring = false
-monitorable = false
-
-[node name="raycastDETECT" type="CollisionShape3D" parent="Area3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00954866, 2.32881, 0)
-shape = SubResource("BoxShape3D_mn02b")
-disabled = true
-
 [node name="FootstepTimer" type="Timer" parent="."]
 wait_time = 0.2
 one_shot = true
@@ -128,17 +117,5 @@ autostart = true
 
 [node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("4_hps1a")
-
-[node name="PlayerDetection" type="Area3D" parent="."]
-visible = false
-collision_layer = 4
-collision_mask = 2
-monitoring = false
-monitorable = false
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="PlayerDetection"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.58962, -0.000213623)
-shape = SubResource("BoxShape3D_hps1a")
-disabled = true
 
 [editable path="Freddy"]

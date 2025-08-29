@@ -3,7 +3,6 @@ extends CanvasLayer
 @onready var foxy_anim: AnimationPlayer = $Background/Foxy/AnimationPlayer
 @onready var camera: Camera3D = $Background/SubViewportContainer/SubViewport/Node3D/Camera3D
 @onready var btn_play: Button = $Menu/MarginContainer/VBoxContainer/btn_play
-@onready var btn_options: Button = $Menu/MarginContainer/VBoxContainer/btn_options
 @onready var btn_quit: Button = $Menu/MarginContainer/VBoxContainer/btn_quit
 @onready var audio_player: AudioStreamPlayer = $Menu/MarginContainer/VBoxContainer/audio_player
 
@@ -51,10 +50,7 @@ func _on_btn_play_mouse_entered() -> void:
 func _on_btn_play_mouse_exited() -> void:
 	btn_play.remove_theme_font_size_override("font_size")
 func _on_btn_options_mouse_entered() -> void:
-	btn_options.add_theme_font_size_override("font_size", 36)
 	play_audio()
-func _on_btn_options_mouse_exited() -> void:
-	btn_options.remove_theme_font_size_override("font_size")
 func _on_btn_quit_mouse_entered() -> void:
 	btn_quit.add_theme_font_size_override("font_size", 36)
 	play_audio()

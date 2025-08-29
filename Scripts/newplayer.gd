@@ -86,7 +86,6 @@ func _physics_process(delta: float) -> void:
 	Global.debug.add_property("Velocity", "%.2f" % velocity.length(), 3)
 	
 	_update_camera(delta)
-	detect_enemy()
 	
 	if not is_on_floor():
 		_momentum = _momentum.move_toward(Vector3.ZERO, DECELERATION * 0.5)
@@ -113,10 +112,6 @@ func _physics_process(delta: float) -> void:
 			else:
 				equipped = true
 				BOX_ANIMATION_PLAYER.play("box_equip",0.25,1.0)
-	if ENEMY_RAYCAST.is_colliding():
-#		if ENEMY_RAYCAST.get_collider().is_in_group("Enemies"):
-#			Global.freeze = true
-		pass
 	elif Global.freeze == true:
 		Global.freeze = false
 
@@ -162,18 +157,6 @@ func regen_stamina(_delta):
 
 func update_velocity() -> void:
 	move_and_slide()
-
-func detect_enemy():
-	if ENEMY_RAYCAST.is_colliding():
-		var collider = ENEMY_RAYCAST.get_collider()
-		if collider is CharacterBody3D and collider.is_in_group("Enemies"):
-			Global.freeze = true
-		elif collider is Area3D and collider.get_parent().is_in_group("Enemies"):
-			Global.freeze = true
-		else:
-			Global.freeze = false
-	else:
-		Global.freeze = false
 
 func initiate_jumpscare(enemy):
 	enemy.ANIM_PLAYER.play()

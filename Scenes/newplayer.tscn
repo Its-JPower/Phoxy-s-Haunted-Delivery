@@ -10,8 +10,8 @@
 [ext_resource type="Script" uid="uid://bkfm6itwc7d1f" path="res://Scripts/sprinting_player_state.gd" id="8_k6h78"]
 [ext_resource type="Script" uid="uid://ciuk7pkckgf6u" path="res://Scripts/crouching_player_state.gd" id="9_7fe1r"]
 [ext_resource type="Script" uid="uid://0ypo4c16not7" path="res://Scripts/sliding_player_state.gd" id="10_tsej5"]
-[ext_resource type="Script" path="res://Scripts/jumping_player_state.gd" id="11_8ng7c"]
-[ext_resource type="Script" path="res://Scripts/wall_run_player_state.gd" id="12_poal2"]
+[ext_resource type="Script" uid="uid://cxu05tygfny0v" path="res://Scripts/jumping_player_state.gd" id="11_8ng7c"]
+[ext_resource type="Script" uid="uid://bktmevd8mhu8h" path="res://Scripts/wall_run_player_state.gd" id="12_poal2"]
 [ext_resource type="AudioStream" uid="uid://u3hj580gwnvw" path="res://Assets/Audio/footstep1.ogg" id="13_rga4r"]
 [ext_resource type="PackedScene" uid="uid://benxlpnpo4bgo" path="res://Scenes/BOX.tscn" id="14_de14b"]
 
@@ -547,7 +547,7 @@ STAMINABAR = NodePath("UserInterface/StaminaBar")
 FLASHLIGHT = NodePath("CameraController/Camera3D/Flashlight")
 AUDIOSTREAM = NodePath("AudioStreamPlayer")
 FOOTSTEP_AUDIO_PLAYER = NodePath("FootstepPlayer3D")
-ENEMY_RAYCAST = NodePath("RayCast3D")
+ENEMY_RAYCAST = NodePath("")
 BOX_ANIMATION_PLAYER = NodePath("Node3D/Box/AnimationPlayer")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -729,15 +729,8 @@ script = ExtResource("12_poal2")
 stream = ExtResource("13_rga4r")
 autoplay = true
 
-[node name="RayCast3D" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.817, -0.5)
-target_position = Vector3(0, -50, 0)
-collision_mask = 3
-collide_with_areas = true
-debug_shape_thickness = 5
-
 [node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(0.974738, -5.58794e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
+transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
 
 [node name="Box" parent="Node3D" instance=ExtResource("14_de14b")]
 transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
