@@ -1,8 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://drrldetdmv4rv"]
+[gd_scene load_steps=8 format=3 uid="uid://drrldetdmv4rv"]
 
 [ext_resource type="PackedScene" uid="uid://u3k6kqv5qe3t" path="res://Scenes/newplayer.tscn" id="1_bi5fs"]
 [ext_resource type="Script" path="res://Scripts/world.gd" id="1_okq71"]
-[ext_resource type="PackedScene" uid="uid://di0yabw5w8rmk" path="res://Scenes/maze.tscn" id="2_bi5fs"]
 [ext_resource type="PackedScene" uid="uid://dsv7sw3idon4b" path="res://Scenes/Freddy.tscn" id="4_wosnj"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_bi5fs"]
@@ -35,7 +34,17 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.2539, 8.77884, 97.0523)
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_bi5fs")
 
-[node name="Maze" parent="NavigationRegion3D" groups=["Maze"] instance=ExtResource("2_bi5fs")]
+[node name="Maze" parent="NavigationRegion3D" groups=["Maze"]]
+_import_path = NodePath("")
+unique_name_in_owner = false
+process_mode = 0
+process_priority = 0
+process_physics_priority = 0
+process_thread_group = 0
+physics_interpolation_mode = 0
+auto_translate_mode = 0
+editor_description = ""
+script = null
 
 [node name="WA_FNAF" parent="." groups=["Enemies"] instance=ExtResource("4_wosnj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.223, 2.25012, 87.9117)
