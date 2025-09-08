@@ -123,7 +123,7 @@ AUDIO_PLAYER = NodePath("AudioStreamPlayer")
 environment = SubResource("Environment_b7vm3")
 
 [node name="NewPlayerCharacter" parent="." instance=ExtResource("1_sojq8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.0214, 2.44867, 94.9734)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.81708, 4.29898, -86.291)
 collision_layer = 3
 collision_mask = 3
 
@@ -171,9 +171,6 @@ autoplay = "LevelOneStart"
 [node name="WA_FNAF" parent="." instance=ExtResource("4_ik1yt")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3648, 1.23796, 89.6372)
 
-[node name="FreddyCollisions" parent="WA_FNAF" index="1"]
-transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, -29.4492, 1.75404, -182.722)
-
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.10976, 9.05755, -94.9269)
 light_energy = 4.243
@@ -183,9 +180,9 @@ omni_range = 24.5009
 wait_time = 0.01
 autostart = true
 
-[node name="Exit" type="Area3D" parent="."]
+[node name="Area3D" type="Area3D" parent="."]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Exit"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.11066, 8.54379, -99.0913)
 shape = SubResource("BoxShape3D_ik1yt")
 
