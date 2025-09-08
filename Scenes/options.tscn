@@ -1,9 +1,0 @@
-[gd_scene load_steps=3 format=3 uid="uid://btl63cfhac7c7"]
-
-[ext_resource type="PackedScene" uid="uid://cp8g67aj4bkv8" path="res://Assets/options/pause.tscn" id="1_4tmxy"]
-[ext_resource type="Script" uid="uid://dnoegrvonr7y6" path="res://Assets/options/pause.gd" id="2_qyyw6"]
-
-[node name="Node3D" type="Node3D"]
-
-[node name="Pause" parent="." instance=ExtResource("1_4tmxy")]
-script = ExtResource("2_qyyw6")
