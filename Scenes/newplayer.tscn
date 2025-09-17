@@ -534,7 +534,7 @@ _data = {
 &"box_unequip": SubResource("Animation_geyfd")
 }
 
-[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "ENEMY_RAYCAST", "BOX_ANIMATION_PLAYER") groups=["Player"]]
+[node name="NewPlayerCharacter" type="CharacterBody3D" node_paths=PackedStringArray("CAMERA_CONTROLLER", "ANIMATION_PLAYER", "FOXY_ANIMATION_PLAYER", "CROUCH_SHAPECAST", "STAMINABAR", "FLASHLIGHT", "AUDIOSTREAM", "FOOTSTEP_AUDIO_PLAYER", "BOX_ANIMATION_PLAYER") groups=["Player"]]
 collision_layer = 2
 collision_mask = 0
 script = ExtResource("1_e21d1")
@@ -547,7 +547,6 @@ STAMINABAR = NodePath("UserInterface/StaminaBar")
 FLASHLIGHT = NodePath("CameraController/Camera3D/Flashlight")
 AUDIOSTREAM = NodePath("AudioStreamPlayer")
 FOOTSTEP_AUDIO_PLAYER = NodePath("FootstepPlayer3D")
-ENEMY_RAYCAST = NodePath("")
 BOX_ANIMATION_PLAYER = NodePath("Node3D/Box/AnimationPlayer")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
@@ -730,7 +729,7 @@ stream = ExtResource("13_rga4r")
 autoplay = true
 
 [node name="Node3D" type="Node3D" parent="."]
-transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
+transform = Transform3D(0.974738, -5.58794e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879034, 0.970964, 0.00206757, -0.287145, -0.0429299)
 
 [node name="Box" parent="Node3D" instance=ExtResource("14_de14b")]
 transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)

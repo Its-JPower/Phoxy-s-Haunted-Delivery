@@ -123,7 +123,7 @@ AUDIO_PLAYER = NodePath("AudioStreamPlayer")
 environment = SubResource("Environment_b7vm3")
 
 [node name="NewPlayerCharacter" parent="." instance=ExtResource("1_sojq8")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.81708, 4.29898, -86.291)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 22.4588, 2.5275, 90.2123)
 collision_layer = 3
 collision_mask = 3
 
@@ -150,7 +150,7 @@ bones/40/rotation = Quaternion(0.0261682, 0.886208, -0.458935, 0.0576998)
 visible = false
 
 [node name="Node3D" parent="NewPlayerCharacter" index="9"]
-transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856826, 0.222488, -0.0879033, 0.970964, 0.00206757, -0.287145, -0.0429299)
+transform = Transform3D(0.974738, -5.58793e-08, -0.223352, 0.0196335, 0.996129, 0.0856827, 0.222488, -0.0879033, 0.970964, 0.00206757, -0.287145, -0.0429299)
 
 [node name="Box" parent="NewPlayerCharacter/Node3D" index="0"]
 transform = Transform3D(0.974739, 6.33299e-08, -0.223352, 0.0196334, 0.996129, 0.0856828, 0.222488, -0.0879034, 0.970965, 0.616185, 0.602714, -0.912525)
@@ -169,7 +169,7 @@ autoplay = "LevelOneStart"
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 
 [node name="WA_FNAF" parent="." instance=ExtResource("4_ik1yt")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3648, 1.23796, 89.6372)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.91463, 0.710141, -84.6883)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.10976, 9.05755, -94.9269)
